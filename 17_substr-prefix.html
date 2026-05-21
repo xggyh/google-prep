@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>17. 以 target 为前缀的子串计数 + 最小包含子串 · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题面经原文">澄清问题（面经原文）</a></li>
+    <li><a href="#q1-解法每次出现-target-贡献-n---end-1-个">Q1 解法：每次出现 target 贡献 `(n - end + 1)` 个</a></li>
+    <li><a href="#q2-解法最早出现位置-最短子串就是-target-本身如果存在">Q2 解法：最早出现位置 → 最短子串就是 target 本身（如果存在）</a></li>
+    <li><a href="#澄清这个歧义">澄清这个歧义！</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>17. 以 target 为前缀的子串计数 + 最小包含子串</h1>
+  <p>来源：Cloud SDE Coding 2 · LC: 无直接 LC <span class="conf-low">❓ 无对应</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">KMP</span>
+    <span class="badge">Z-Algorithm</span>
+    <span class="badge">String</span>
+    <span class="badge"><span class="conf-low">❓ 无对应</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google Cloud SDE Coding 2
+<strong>原描述</strong>：输入 string 和 target，求有多少个以 target 为前缀的 substring。Follow-up：最小包含 target 的 substring 长度。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>:
+- <strong>Q1</strong>: Given <code>s</code> and <code>target</code>, count the number of substrings of <code>s</code> that start with <code>target</code> as a prefix.
+- <strong>Q2 (Follow-up)</strong>: Find the length of the shortest substring of <code>s</code> that contains <code>target</code> (as substring, not prefix).</p>
+<p><strong>中文</strong>：
+- Q1：字符串 s 和 target，求 s 中有多少子串以 target 为前缀。
+- Q2：求 s 中包含 target 的最短子串长度。</p>
+</section>
+
+<section id="澄清问题面经原文">
+<h2>澄清问题（面经原文）</h2>
+<ul>
+<li><strong>EN</strong>: Is <code>len(s) &gt;= len(target)</code> guaranteed? / If <code>len(s) &lt; len(target)</code>, return 0, -1, null, or empty? / Are these case-sensitive? / What if <code>target</code> is empty?</li>
+<li><strong>中</strong>：保证 |s| &gt;= |target| 吗？如果 |s| &lt; |target|，输出什么（0 / -1 / null / 空）？大小写敏感吗？target 空字符串怎么办？</li>
+</ul>
+</section>
+
+<section id="q1-解法每次出现-target-贡献-n---end-1-个">
+<h2>Q1 解法：每次出现 target 贡献 `(n - end + 1)` 个</h2>
+<p>子串以 target 为前缀 ⇔ 子串起点是 target 在 s 中的出现位置之一，且子串长度 ≥ |target|。
+若 target 在位置 <code>i</code> 出现（i 是 target 的起点），则以这个 target 开头的子串有 <code>n - i - |target| + 1 + |target| - 1 + 1 = n - i</code> 个？</p>
+<p>实际上更简单：以位置 i 为起点、且包含 target（target 的起点是 i）的子串，长度可以是 <code>|target|, |target|+1, ..., n-i</code>，共 <code>n - i - |target| + 1</code> 个。</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">count_substr_with_prefix</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># 所有非空子串</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">occ</span> <span class="o">=</span> <span class="n">find_all_occurrences</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>  <span class="c1"># KMP / Z</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">occ</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">find_all_occurrences</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="c1"># KMP</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">lps</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">lps</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">lps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">lps</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">lps</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">res</span>
+</code></pre></div>
+</section>
+
+<section id="q2-解法最早出现位置-最短子串就是-target-本身如果存在">
+<h2>Q2 解法：最早出现位置 → 最短子串就是 target 本身（如果存在）</h2>
+<p>如果 target 在 s 中作为 substring 出现，最短包含 target 的子串就是 target 自己 — 长度 |target|。</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">shortest_containing</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">occ</span> <span class="o">=</span> <span class="n">find_all_occurrences</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="k">if</span> <span class="n">occ</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+</code></pre></div>
+
+<blockquote>
+<p>⚠️ 如果 Q2 的"包含 target"是指"包含 target 的所有字符"（multiset 意义，类似 LC 76 Minimum Window Substring），那是另一个题。</p>
+</blockquote>
+</section>
+
+<section id="澄清这个歧义">
+<h2>澄清这个歧义！</h2>
+<p>"最小包含 target 的 substring 长度" 有两种解读：
+1. <strong>substring 意义</strong>：target 作为连续子串出现 → 答案就是 |target|（trivial）。
+2. <strong>multiset 意义</strong>：包含 target 的所有字符（顺序不要紧）→ LC 76 滑窗。</p>
+<p><strong>这一步必须先问面试官，不然写错算法</strong>。</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>Q1 的关键洞察</strong>：算出现位置 → 算贡献。</li>
+<li><strong>KMP / Z-algorithm 引出</strong>：从朴素 O(nm) 到 O(n+m)。</li>
+<li><strong>Q2 澄清歧义</strong>：直接问"是连续子串还是字符集合"，体现对题目敏感度。</li>
+<li><strong>如果是 multiset 意义</strong>：滑动窗口 O(n)，参考 LC 76 解法。</li>
+<li><strong>复杂度</strong>：Q1 O(n+m)，Q2 同。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>没澄清 Q2 含义</strong>：直接写错算法。</li>
+<li><strong>KMP 失败函数写错</strong>：常见 bug 来源；不熟就用 Python 的 <code>s.find</code> 配 <code>while</code> 找所有位置，朴素 O(nm) 但能 work。</li>
+<li><strong>target 空串</strong>：是 corner case，先确认。</li>
+<li><strong>target = s 完整字符串</strong>：贡献是 1（不是 0），别写错边界。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="16_tree-distance.html" class="prev"><span class="label">← 上一题</span><span class="title">16. 树中两点距离</span></a>
+  <a href="18_elevator.html" class="next"><span class="label">下一题 →</span><span class="title">18. 电梯调控器</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

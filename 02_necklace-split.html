@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02. 项链切割平分 D/R（无直接 LC，本题 + 滑窗） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#关键观察">关键观察</a></li>
+    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>02. 项链切割平分 D/R（无直接 LC，本题 + 滑窗）</h1>
+  <p>来源：L4 AI/ML 四轮 R4 · LC: 无直接 LC <span class="conf-low">❓ 无对应</span> · 难度: <span class="diff-hard">Hard</span></p>
+  <div class="meta">
+    <span class="badge">Sliding Window</span>
+    <span class="badge">Greedy</span>
+    <span class="badge">Custom</span>
+    <span class="badge"><span class="conf-low">❓ 无对应</span></span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google L4 AI/ML 四轮全套面经 R4
+<strong>原描述</strong>：由 D 和 R 组成的字符串（#D = #R），切开后分给两个人，保证两人的 D 和 R 都相等。关键：at most 2 cuts + sliding window。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: A circular string of <code>'D'</code> and <code>'R'</code> with equal count. Split it by <strong>at most 2 cuts</strong> so that two people each receive segments with equal counts of D and R. Return the cut positions (or just <code>True/False</code> for feasibility).</p>
+<p><strong>中文</strong>：一个由 D 和 R 组成的字符串，D 和 R 数量相等。最多切 2 刀，分给两人，使两人各自的 D 数和 R 数都相等。返回切的位置（或是否可行）。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Is the string circular or linear? / "At most 2 cuts" — does 1 cut count? / Is it guaranteed <code>#D == #R</code>? / Each person must get a non-empty segment? / Can the two segments interleave (2 cuts producing 3 pieces, one person takes the middle one)?</li>
+<li><strong>中</strong>：字符串是环形还是线性？2 刀指的是最多 2 刀还是恰好 2 刀？是否保证 D 和 R 数量相等？两人是否可以拿不连续的段（如 2 刀切 3 段，一人拿中间，一人拿两边）？</li>
+</ul>
+</section>
+
+<section id="关键观察">
+<h2>关键观察</h2>
+<ol>
+<li><strong>1 刀可解的情况</strong>：从某个位置切开，左右两段 D/R 数量都各占一半 → 滑动起点（如果环形）或简单前缀和（如果线性）。</li>
+<li><strong>2 刀必解情况</strong>：当 1 刀不行时，2 刀一定能行 — 切出中间一段长度 = n/2 且其中 D 和 R 各占总数一半即可。这转化为<strong>长度为 n/2 的滑动窗口</strong>找一个窗口里 D 数 = R 数 = n/4。</li>
+</ol>
+</section>
+
+<section id="python-实现">
+<h2>Python 实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">split_necklace</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">total_d</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="n">total_r</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">total_d</span>
+    <span class="k">if</span> <span class="n">total_d</span> <span class="o">!=</span> <span class="n">total_r</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># 题目保证不会发生，但 defensive</span>
+    <span class="n">half_d</span><span class="p">,</span> <span class="n">half_r</span> <span class="o">=</span> <span class="n">total_d</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">total_r</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="c1"># 1 cut: 前缀的 D == half_d 且 R == half_r</span>
+    <span class="n">cd</span> <span class="o">=</span> <span class="n">cr</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span>
+            <span class="n">cd</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cr</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cd</span> <span class="o">==</span> <span class="n">half_d</span> <span class="ow">and</span> <span class="n">cr</span> <span class="o">==</span> <span class="n">half_r</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># 在 i 和 i+1 之间切</span>
+
+    <span class="c1"># 2 cuts: 长度 n/2 的窗口内 D 数 = half_d</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">cd</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">[:</span><span class="n">w</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cd</span> <span class="o">==</span> <span class="n">half_d</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">cd</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">w</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cd</span> <span class="o">==</span> <span class="n">half_d</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">w</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>先做 brute force</strong>：枚举所有 1-cut 和 2-cut 组合 — O(n²)，要明确说"这是 baseline，我会优化"。</li>
+<li><strong>关键 insight</strong>：必然存在解 ⇒ "如果 1 刀切不出来，那 2 刀一定能" 这个 claim 要证明（前缀和的奇偶性 + 中间值定理类似论证）。</li>
+<li><strong>滑动窗口降到 O(n)</strong>：解释固定长度 n/2 的窗口怎么 O(1) 维护 D 计数。</li>
+<li><strong>复杂度对比</strong>：从 O(n²) 到 O(n)，space O(1)。</li>
+<li><strong>Edge case 主动列</strong>：n 奇数？全 D 全 R？只有 2 个字符？</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>以为 1 刀就够</strong>：很多情况下需要 2 刀，必须想清楚什么时候必须 2 刀。</li>
+<li><strong>环形 vs 线性混淆</strong>：必须先问。</li>
+<li><strong>没意识到 2 刀就是滑窗</strong>：被"切两刀"的语言迷惑，想 DP 或回溯，浪费时间。</li>
+<li><strong>数学证明跳过</strong>：面试官常会问"为什么 2 刀够"，没准备会卡。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="01_friend-logs.html" class="prev"><span class="label">← 上一题</span><span class="title">01. 朋友圈与解除好友</span></a>
+  <a href="03_dijkstra-via.html" class="next"><span class="label">下一题 →</span><span class="title">03. Dijkstra 经过指定点</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

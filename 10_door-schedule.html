@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10. 进出门时间表（带优先级 tie-breaking） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#优化版堆">优化版（堆）</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>10. 进出门时间表（带优先级 tie-breaking）</h1>
+  <p>来源：SDE NG VO R2 题2 · LC: 无直接 LC <span class="conf-low">❓ 无对应</span> · 难度: <span class="diff-hard">Hard</span></p>
+  <div class="meta">
+    <span class="badge">Queue</span>
+    <span class="badge">Heap</span>
+    <span class="badge">Simulation</span>
+    <span class="badge"><span class="conf-low">❓ 无对应</span></span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google SDE NG VO R2 第二题
+<strong>原描述</strong>：有序数组，每个索引代表不同的人，元素是 <code>(timestamp, "进"/"出")</code>。返回每人的实际进/出时间。tie-breaking：前一刻进 → 进优先；前一刻出 → 出优先；前一刻无 → 出优先；同时进/出 → 索引小的优先。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: An array indexed by person ID, where <code>arr[i] = (timestamp, "in"|"out")</code> indicates person <code>i</code> wants to enter or exit at time <code>timestamp</code>. At each tick only one person can pass through the door. Resolve schedule with rules:
+- If previous action was "in" → "in" requests have priority.
+- If previous was "out" → "out" has priority.
+- If door was idle → "out" priority.
+- Within same direction, lower index goes first.
+Return for each person the actual time they enter/exit.</p>
+<p><strong>中文</strong>：（同原描述）</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: One person per timestamp unit? / Time is integer or real? / Can a person have multiple requests? / What if no one is queued? door stays in last state? / What's "previous action" if it was a tie? / Output format?</li>
+<li><strong>中</strong>：每个时刻只能过一个人吗？时间是整数还是实数？同一个人能有多个请求吗？没人时门保持上一个状态还是 reset？如果上一刻同时有人进出（tie），算"进"还是"出"？</li>
+</ul>
+</section>
+
+<section id="python-实现">
+<h2>Python 实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+
+
+<span class="k">def</span> <span class="nf">schedule</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+    <span class="c1"># 进队列和出队列，存 (timestamp, person_id)</span>
+    <span class="n">in_q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+    <span class="n">out_q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span><span class="p">:</span>
+            <span class="n">in_q</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out_q</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+    <span class="c1"># 按 timestamp 排序（题目说有序，但 defensive）</span>
+    <span class="n">in_q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">in_q</span><span class="p">))</span>
+    <span class="n">out_q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">out_q</span><span class="p">))</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>  <span class="c1"># &quot;in&quot; / &quot;out&quot; / &quot;none&quot;</span>
+    <span class="n">cur_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">in_q</span> <span class="ow">or</span> <span class="n">out_q</span><span class="p">:</span>
+        <span class="c1"># 跳到下一个有人的时间点</span>
+        <span class="n">next_t</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">in_q</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">in_q</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+                     <span class="n">out_q</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">out_q</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">))</span>
+        <span class="n">cur_time</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cur_time</span><span class="p">,</span> <span class="n">next_t</span><span class="p">)</span>
+
+        <span class="c1"># 这一时刻可用的人</span>
+        <span class="n">in_avail</span> <span class="o">=</span> <span class="p">[</span><span class="n">pid</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">in_q</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">cur_time</span><span class="p">]</span>
+        <span class="n">out_avail</span> <span class="o">=</span> <span class="p">[</span><span class="n">pid</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">out_q</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">cur_time</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">in_avail</span> <span class="ow">and</span> <span class="n">out_avail</span><span class="p">:</span>
+            <span class="n">chosen_dir</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span> <span class="k">if</span> <span class="n">prev</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span> <span class="k">else</span> <span class="s2">&quot;out&quot;</span>
+        <span class="k">elif</span> <span class="n">in_avail</span><span class="p">:</span>
+            <span class="n">chosen_dir</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chosen_dir</span> <span class="o">=</span> <span class="s2">&quot;out&quot;</span>
+
+        <span class="k">if</span> <span class="n">chosen_dir</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span><span class="p">:</span>
+            <span class="n">in_avail</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="n">in_avail</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">in_q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">in_q</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="n">pid</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out_avail</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="n">out_avail</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">out_q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">out_q</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="n">pid</span><span class="p">)</span>
+
+        <span class="n">result</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur_time</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">chosen_dir</span>
+        <span class="n">cur_time</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># 每人占用 1 个时间单位</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+
+<blockquote>
+<p>⚠️ 上面是清晰版（O(n²)）。优化版用堆，复杂度 O(n log n)。</p>
+</blockquote>
+</section>
+
+<section id="优化版堆">
+<h2>优化版（堆）</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+
+<span class="k">def</span> <span class="nf">schedule_opt</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+    <span class="n">in_heap</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">out_heap</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span><span class="p">:</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">in_heap</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">out_heap</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;out&quot;</span>  <span class="c1"># 初始时按 &quot;如果前一刻没人，出门优先&quot;</span>
+    <span class="n">cur_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">avail</span><span class="p">(</span><span class="n">heap</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">heap</span> <span class="ow">and</span> <span class="n">heap</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">cur_time</span>
+
+    <span class="k">while</span> <span class="n">in_heap</span> <span class="ow">or</span> <span class="n">out_heap</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">avail</span><span class="p">(</span><span class="n">in_heap</span><span class="p">)</span> <span class="ow">or</span> <span class="n">avail</span><span class="p">(</span><span class="n">out_heap</span><span class="p">)):</span>
+            <span class="n">cur_time</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">in_heap</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">in_heap</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+                           <span class="n">out_heap</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">out_heap</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">avail</span><span class="p">(</span><span class="n">in_heap</span><span class="p">)</span> <span class="ow">and</span> <span class="n">avail</span><span class="p">(</span><span class="n">out_heap</span><span class="p">):</span>
+            <span class="n">chosen</span> <span class="o">=</span> <span class="n">in_heap</span> <span class="k">if</span> <span class="n">prev</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span> <span class="k">else</span> <span class="n">out_heap</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span> <span class="k">if</span> <span class="n">chosen</span> <span class="ow">is</span> <span class="n">in_heap</span> <span class="k">else</span> <span class="s2">&quot;out&quot;</span>
+        <span class="k">elif</span> <span class="n">avail</span><span class="p">(</span><span class="n">in_heap</span><span class="p">):</span>
+            <span class="n">chosen</span> <span class="o">=</span> <span class="n">in_heap</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chosen</span> <span class="o">=</span> <span class="n">out_heap</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;out&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">chosen</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur_time</span>
+        <span class="n">cur_time</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>先复述规则</strong>：用 3-4 个具体例子让面试官确认 tie-breaking 你理解对了。</li>
+<li><strong>两个队列建模</strong>：进队 + 出队是 obvious data structure。</li>
+<li><strong>朴素法</strong>：时间一点点加（题目原话提到），O(T)，T 是最大时间戳。</li>
+<li><strong>优化</strong>：直接跳到"下一个有人"的时间点，O(n log n)。</li>
+<li><strong>强调 prev_state 的维护</strong>：这题最容易出 bug 的地方。</li>
+<li><strong>画时间轴</strong>：在白板/doc 上画时间轴 + 谁在哪个队列，让面试官跟得上。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>tie-breaking 漏一条</strong>：4 条规则要全部覆盖，少一条就错。</li>
+<li><strong>"同时"vs"同 timestamp"</strong>：要确认是同一时刻就 tie，还是要求同时到达。</li>
+<li><strong>person 可能被处理多次</strong>：输入按"每人一条记录"理解，但要问清楚。</li>
+<li><strong>prev 初始值</strong>：题目说"前一刻没人，出门优先"，所以 <code>prev = "none"</code> 时按 out 处理。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="09_game-of-life.html" class="prev"><span class="label">← 上一题</span><span class="title">09. Game of Life</span></a>
+  <a href="11_max-edge-remove.html" class="next"><span class="label">下一题 →</span><span class="title">11. 删点后图中最大边权</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

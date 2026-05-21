@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13. Perfect Wake Number 计数（数位 DP） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#检验单个数字-简单题">检验单个数字 — 简单题</a></li>
+    <li><a href="#follow-up1n-内-pwn-计数数位-dp">Follow-up：1~n 内 PWN 计数（数位 DP）</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>13. Perfect Wake Number 计数（数位 DP）</h1>
+  <p>来源：Coding R1 · LC: 数位 DP <span class="conf-low">❓ 无对应</span> · 难度: <span class="diff-hard">Hard</span></p>
+  <div class="meta">
+    <span class="badge">Digit DP</span>
+    <span class="badge">Bitmask</span>
+    <span class="badge">Memoization</span>
+    <span class="badge"><span class="conf-low">❓ 无对应</span></span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google coding R1
+<strong>原描述</strong>：定义 Perfect Wake Number：(1) 各位数字不重复，(2) 不含 0，(3) 没有一位数字同时邻接两个比它大的数字（i.e., 不是局部最小，除了端点）。Follow-up：1 到 n 之间有多少个？</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: A positive integer is a <em>Perfect Wake Number</em> if:
+1. No repeated digits.
+2. Does not contain digit <code>0</code>.
+3. No digit is adjacent to two strictly larger digits (i.e., no "valley" — every internal digit is ≥ at least one neighbor).
+Examples: <code>196, 23, 12463</code> are valid. <code>1546</code> is not (4 has 5 and 6 both larger). <code>320</code> invalid (has 0). <code>34321</code> invalid (3 repeats).</p>
+<p><strong>Follow-up</strong>: Count Perfect Wake Numbers in <code>[1, n]</code>.</p>
+<p><strong>中文</strong>：（同上）</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Is single-digit number always valid? / Can leading digit be anything 1-9? / "Strictly larger" — what about equal? (Moot since no repeats) / n's range — fits in int64? / What about n's number of digits — up to 18?</li>
+<li><strong>中</strong>：单个数字算 Perfect Wake 吗？n 的范围（决定数位 DP 状态数）？前导是否一定非零（题目说不含 0 所以自然）？是否要返回数字本身还是 count？</li>
+</ul>
+</section>
+
+<section id="检验单个数字-简单题">
+<h2>检验单个数字 — 简单题</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">is_perfect_wake</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;0&#39;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+</section>
+
+<section id="follow-up1n-内-pwn-计数数位-dp">
+<h2>Follow-up：1~n 内 PWN 计数（数位 DP）</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">count_perfect_wake</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">digits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span>
+    <span class="c1"># state: (pos, prev_digit, prev_prev_digit, used_mask, is_tight, started)</span>
+    <span class="c1"># prev_digit = -1 表示还没开始</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">dp</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">prev_prev</span><span class="p">,</span> <span class="n">used_mask</span><span class="p">,</span> <span class="n">is_tight</span><span class="p">,</span> <span class="n">started</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="n">L</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">started</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">upper</span> <span class="o">=</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_tight</span> <span class="k">else</span> <span class="mi">9</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># 选择不开始（依然 leading 0）</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">dp</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">is_tight</span> <span class="ow">and</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">start_d</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start_d</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># 但因为不含 0，所以下面统一从 1 开始</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">start_d</span><span class="p">),</span> <span class="n">upper</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">used_mask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="c1"># 检查 valley 规则：prev 不能比 prev_prev 和 d 都小</span>
+            <span class="k">if</span> <span class="n">prev</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">prev_prev</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prev</span> <span class="o">&lt;</span> <span class="n">prev_prev</span> <span class="ow">and</span> <span class="n">prev</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># 这一步如果选 d，会让 prev 变成 valley</span>
+            <span class="n">new_tight</span> <span class="o">=</span> <span class="n">is_tight</span> <span class="ow">and</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">dp</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">used_mask</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">),</span> <span class="n">new_tight</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total</span>
+
+    <span class="k">return</span> <span class="n">dp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>第一题（单个数字判定）几乎送分</strong>，30 秒讲完。</li>
+<li><strong>进入 follow-up 前</strong>，明确告诉面试官："这是数位 DP，状态包括位置、是否 tight、是否已开始、前两位"。</li>
+<li><strong>状态设计</strong>：
+   - <code>pos</code>: 当前位
+   - <code>prev, prev_prev</code>: 前两位的数字（用来检查中间的"valley"）
+   - <code>used_mask</code>: 已用数字 bitmask (10 bit) — 因为不重复
+   - <code>is_tight</code>: 当前位是否受 n 限制
+   - <code>started</code>: 是否已写出第一位（处理前导 0）</li>
+<li><strong>复杂度</strong>：状态数 ≈ L × 10 × 10 × 1024 × 2 × 2 ≈ 800K，可接受。</li>
+<li><strong>画图</strong>：在白板上画 dp(0, ...) → dp(1, ...) 的转移，让面试官跟得上。</li>
+<li><strong>诚实</strong>：这题在面试 30-45 分钟内全写对很难，能讲清楚 + 写出主体框架 + 1 个例子 trace 就够 hire。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>忽略前导 0 处理</strong>：数位 DP 经典坑，要专门加 <code>started</code> 状态。</li>
+<li><strong>valley 检查时机错</strong>：必须在"选定下一位 d 之后回头检查 prev"，而不是在选 prev 当时。</li>
+<li><strong><code>used_mask</code> 忘记</strong>：题目要求 no repeated digits。</li>
+<li><strong>bitmask 用 0 位</strong>：因为不含 0，bit 0 永远不会被设置，可以省一位或不省。</li>
+<li><strong>lru_cache + 全局状态</strong>：每次新 n 要清缓存。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="12_circular-fence.html" class="prev"><span class="label">← 上一题</span><span class="title">12. 环形 Paint Fence</span></a>
+  <a href="14_longest-match-token.html" class="next"><span class="label">下一题 →</span><span class="title">14. 最长匹配分词</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

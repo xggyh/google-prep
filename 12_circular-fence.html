@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12. 环形 Paint Fence（LC 276 变体） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#解法核心固定前两根递推剩下">解法核心：固定前两根，递推剩下</a></li>
+    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>12. 环形 Paint Fence（LC 276 变体）</h1>
+  <p>来源：Circular Paint Fence · LC: LC 276 变体 <span class="conf-mid">🟡 变体</span> · 难度: <span class="diff-hard">Hard</span></p>
+  <div class="meta">
+    <span class="badge">DP</span>
+    <span class="badge">Circular</span>
+    <span class="badge"><span class="conf-mid">🟡 变体</span></span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google Software Engineer Interview Circular Paint Fence Question
+<strong>原描述</strong>：LC 276 Paint Fence 但是<strong>环形</strong> — 第一根和最后一根相邻。原帖说他和 GPT/Claude/Gemini 都没解出来。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Paint <code>n</code> fence posts arranged in a <strong>circle</strong> using <code>k</code> colors such that no three consecutive posts have the same color. Return the number of ways. (Posts 1 and n are adjacent.)</p>
+<p><strong>中文</strong>：n 根栅栏围成一圈，用 k 种颜色涂色，要求<strong>不能有连续 3 根相同颜色</strong>。第一根和第 n 根相邻。求方案数。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Is the rule "no two consecutive same" (LC 276) or "no three consecutive same"? / Modular arithmetic for large answer? / n and k ranges? / n=1, n=2, n=3 edge cases — what's expected?</li>
+<li><strong>中</strong>：约束是"任意两根相邻不同"（LC 276 原版）还是"任意三根连续不能全相同"？答案要不要模 10^9+7？n、k 范围？n 极小时（1/2/3）期望是什么？</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>关键</strong>：LC 276 原题是"不能连续 3 根相同"（at most 2 consecutive same）。本题在此基础上加上"环形"。</p>
+</blockquote>
+</section>
+
+<section id="解法核心固定前两根递推剩下">
+<h2>解法核心：固定前两根，递推剩下</h2>
+<p>线性 DP：<code>same[i]</code> = 第 i 根和第 i-1 根同色的方案数；<code>diff[i]</code> = 不同色的方案数。
+- <code>same[i] = diff[i-1]</code> （上一根必须不同色，否则连续 3 同色）
+- <code>diff[i] = (same[i-1] + diff[i-1]) * (k-1)</code></p>
+<p>环形要保证：post[1] 和 post[n]、post[n-1]/post[n]/post[1] 都满足约束。</p>
+<p><strong>枚举前两根的颜色组合</strong>，跑线性 DP，最后检查闭环。</p>
+</section>
+
+<section id="python-实现">
+<h2>Python 实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">num_ways_circular</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">k</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span>  <span class="c1"># 两根可同可不同</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span> <span class="o">-</span> <span class="n">k</span>  <span class="c1"># 总数 - 全同色</span>
+
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># 枚举 post[0] 颜色 c0、post[1] 颜色 c1</span>
+    <span class="k">for</span> <span class="n">c0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="c1"># 线性 DP, end_colors[c2] = (same_with_prev, diff_with_prev) 在位置 n-1 的方案</span>
+            <span class="c1"># 用 (prev_prev, prev) 状态</span>
+            <span class="c1"># 起始 dp[(c0, c1)] = 1</span>
+            <span class="n">dp</span> <span class="o">=</span> <span class="p">{(</span><span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">):</span> <span class="mi">1</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">ndp</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">cnt</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">p</span> <span class="o">==</span> <span class="n">pp</span><span class="p">:</span>
+                            <span class="k">continue</span>  <span class="c1"># 连续 3 同色</span>
+                        <span class="n">ndp</span><span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="n">ndp</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">cnt</span>
+                <span class="n">dp</span> <span class="o">=</span> <span class="n">ndp</span>
+            <span class="c1"># 闭环检查：post[n-1] = p, post[0] = c0, post[1] = c1</span>
+            <span class="c1"># 约束1：post[n-1], post[0], post[1] 不能三同</span>
+            <span class="c1"># 约束2：post[n-2], post[n-1], post[0] 不能三同</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">cnt</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># 检查 pp, p, c0</span>
+                <span class="k">if</span> <span class="n">pp</span> <span class="o">==</span> <span class="n">p</span> <span class="o">==</span> <span class="n">c0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># 检查 p, c0, c1</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">c0</span> <span class="o">==</span> <span class="n">c1</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="n">cnt</span>
+    <span class="k">return</span> <span class="n">total</span>
+</code></pre></div>
+
+<blockquote>
+<p>⚠️ 上面 O(n·k³)，n 很大时不行。若题目要求大 n，需要矩阵快速幂 / 闭式公式。</p>
+</blockquote>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>先承认这题难</strong>，但分两步：(a) 解 LC 276 线性版，(b) 加环形约束。</li>
+<li><strong>画 4 根栅栏的小例子</strong>走一遍，让面试官跟上 DP 转移。</li>
+<li><strong>环形通用技巧</strong>：枚举头两根（或头一根）的状态，跑线性 DP，最后人工 check 闭环。</li>
+<li><strong>关键 follow-up</strong>：n 很大（10^9）？→ 矩阵快速幂，O(k⁶ log n)。</li>
+<li><strong>诚实表态</strong>：如果时间不够写完，列出剩余思路 — 比硬写出 bug 强。</li>
+<li><strong>这题原帖作者没解出来</strong>：你能在 30 分钟内画清楚思路 + 写出 30-40 行代码就是 strong hire。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>理解成"不能两根相邻同色"</strong>：那是另一个变体，答案是 k·(k-1)^(n-1) ± 闭环修正。</li>
+<li><strong>环形约束只检查 1 和 n</strong>：错，要同时检查 (n-1, n, 1) 和 (n, 1, 2)。</li>
+<li><strong>枚举头两根 O(k²) 觉得多</strong>：N 大 K 小时完全可接受。</li>
+<li><strong>不画图直接写代码</strong>：环形 DP 不画图很容易状态搞错。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="11_max-edge-remove.html" class="prev"><span class="label">← 上一题</span><span class="title">11. 删点后图中最大边权</span></a>
+  <a href="13_perfect-wake.html" class="next"><span class="label">下一题 →</span><span class="title">13. Perfect Wake Number 计数</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

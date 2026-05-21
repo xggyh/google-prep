@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>08. 删除目录递归实现（DFS 文件系统） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>08. 删除目录递归实现（DFS 文件系统）</h1>
+  <p>来源：L4 两轮 Onsite R2 · LC: LC 1233 思想 <span class="conf-mid">🟡 变体</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">DFS</span>
+    <span class="badge">Recursion</span>
+    <span class="badge">File System</span>
+    <span class="badge"><span class="conf-mid">🟡 变体</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google L4 两轮 Onsite R2
+<strong>原描述</strong>：给定 <code>getChildrenPaths(path)</code> 和 <code>deleteFile(path)</code> 两个 API，实现 <code>deleteDirectory(path)</code>。问了很多不同实现的 tradeoff。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given APIs <code>getChildrenPaths(path: str) -&gt; List[str]</code> and <code>deleteFile(path: str) -&gt; None</code>, implement <code>deleteDirectory(path: str) -&gt; None</code> that recursively removes everything under <code>path</code>.</p>
+<p><strong>中文</strong>：给定两个 API <code>getChildrenPaths(path)</code>（返回子节点路径）和 <code>deleteFile(path)</code>（删除单个文件），实现 <code>deleteDirectory(path)</code> — 递归删除整个目录。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: How to distinguish a file from a directory? (<code>getChildrenPaths</code> returns empty for files?) / Is <code>deleteFile</code> synchronous? / Can it fail? / Are concurrent modifications happening? / Is the tree depth bounded? / Should we delete the root path itself or just its contents?</li>
+<li><strong>中</strong>：怎么区分文件和目录（API 怎么告诉我们）？<code>deleteFile</code> 是同步的吗？会失败吗？删除过程中树会被并发修改吗？树深度有限制吗？是删 <code>path</code> 自身还是只删 <code>path</code> 下的内容？</li>
+</ul>
+</section>
+
+<section id="python-实现">
+<h2>Python 实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deleteDirectory</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;假设：getChildrenPaths 返回空表示是文件。&quot;&quot;&quot;</span>
+    <span class="n">children</span> <span class="o">=</span> <span class="n">getChildrenPaths</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">children</span><span class="p">:</span>
+        <span class="n">deleteFile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+        <span class="n">deleteDirectory</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="n">deleteFile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># 删自己（如果 API 要求）</span>
+
+
+<span class="k">def</span> <span class="nf">deleteDirectory_iter</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;迭代版，避免深递归爆栈。后序遍历。&quot;&quot;&quot;</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">path</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
+    <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+        <span class="n">cur</span><span class="p">,</span> <span class="n">processed</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">processed</span><span class="p">:</span>
+            <span class="n">deleteFile</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cur</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">getChildrenPaths</span><span class="p">(</span><span class="n">cur</span><span class="p">):</span>
+                <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">child</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>画一棵小树</strong>，明确"后序遍历"是关键 — 先删子节点再删父节点，否则父删了子还在就泄漏。</li>
+<li><strong>递归 vs 迭代 trade-off</strong>（这题被反复追问）：
+   - 递归：代码短，但深目录会爆栈。
+   - 迭代用 stack：稳定但代码长，要标记"是否已处理子节点"。</li>
+<li><strong>API 失败处理</strong>：<code>deleteFile</code> 失败时是 retry、跳过、还是抛？要主动问。</li>
+<li><strong>并发</strong>：如果有其他进程在加文件，最终一致性怎么保证？讨论"加锁" / "delete 期间禁止 write" / "标记 tombstone 后异步 GC"。</li>
+<li><strong>复杂度</strong>：O(N) 总节点数，每个节点一次 API call。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>先删父再删子</strong>：导致逻辑错误甚至无限循环。</li>
+<li><strong>不考虑 <code>getChildrenPaths</code> 失败</strong>：网络抖动很常见，要 retry + idempotent。</li>
+<li><strong>递归在 200+ 深目录上 RecursionError</strong>。</li>
+<li><strong>没问"是否删根"</strong>：API 语义可能是"删 path 自身"或"清空 path 下"，影响代码。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="07_place-flowers.html" class="prev"><span class="label">← 上一题</span><span class="title">07. N×N 网格放花</span></a>
+  <a href="09_game-of-life.html" class="next"><span class="label">下一题 →</span><span class="title">09. Game of Life</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

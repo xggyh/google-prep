@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11. 删点后图中最大边权（无直接 LC） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#python-实现预处理法-final-solution-from-面经">Python 实现（预处理法 — Final Solution from 面经）</a></li>
+    <li><a href="#o1-per-query-版本">O(1) per query 版本</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>11. 删点后图中最大边权（无直接 LC）</h1>
+  <p>来源：SWE II L3 R1 · LC: 无直接 LC <span class="conf-low">❓ 无对应</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">Graph</span>
+    <span class="badge">Preprocessing</span>
+    <span class="badge">Heap</span>
+    <span class="badge"><span class="conf-low">❓ 无对应</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google SWE II L3 R1
+<strong>原描述</strong>：加权图，给一个节点，删除它和它所有的边，返回剩下图中最大边权。讨论了 priority queue、multiset、preprocessing 三种思路。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given a weighted graph and a node <code>v</code>, remove <code>v</code> and all its incident edges. Return the maximum edge weight in the remaining graph. Support multiple such queries.</p>
+<p><strong>中文</strong>：加权图，给定节点 v，删除 v 和它所有相邻边，返回剩下的最大边权。支持多次查询。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: How many queries? / Are queries on the same graph (each query independent — node not actually removed) or sequential (each query mutates the graph)? / Are weights unique? / What if graph becomes empty?</li>
+<li><strong>中</strong>：查询次数？每次查询是独立的（图不变，只是"假设删了 v"）还是累积的（真的删了）？边权是否唯一？图被删空怎么办？</li>
+</ul>
+</section>
+
+<section id="python-实现预处理法-final-solution-from-面经">
+<h2>Python 实现（预处理法 — Final Solution from 面经）</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+
+<span class="k">class</span> <span class="nc">GraphQuery</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;假设：每次查询独立，预处理后 O(1) 回答。&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adj</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>  <span class="c1"># node -&gt; sorted list of (weight, other_end)</span>
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">))</span>
+        <span class="c1"># 全图所有边按权重降序排序</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_edges</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="o">-</span><span class="n">e</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">max_weight_after_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_edges</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">u</span> <span class="o">!=</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">node</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">w</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># 全部被删光</span>
+</code></pre></div>
+
+<blockquote>
+<p>上面是 O(query × E) — 没真正"预处理到 O(1)"。下面是 O(1) per query。</p>
+</blockquote>
+</section>
+
+<section id="o1-per-query-版本">
+<h2>O(1) per query 版本</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">GraphQuery</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+        <span class="n">edges_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="o">-</span><span class="n">e</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="c1"># 对每个 node v，缓存&quot;不含 v 的最大边&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ans</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># 朴素 O(N·E)</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">u</span><span class="p">);</span> <span class="n">nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ans</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">edges_sorted</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">u</span> <span class="o">!=</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">node</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ans</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>
+                    <span class="k">break</span>
+
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ans</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">edges_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="n">edges_sorted</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>递进 3 个方案，正是面经的强烈推荐路径</strong>：
+   - <strong>Brute</strong>: 每次删 + 扫所有边求 max，O(E) per query。
+   - <strong>Max-heap</strong>: 扔进堆，pop 直到顶不连 v；问题是 pop 出来的还要还原。
+   - <strong>Multiset / sorted edges</strong>: 一次排序，每次查询扫排序后的边，O(E) 但常数小。
+   - <strong>Preprocessing</strong>: 对每个 node 预计算答案，每次查询 O(1)。</li>
+<li><strong>关键洞察</strong>：所有边按权重降序排序，第一条不连 v 的就是答案。</li>
+<li><strong>如果允许超大 N</strong>：可以只对<strong>前 K 大的边</strong>做查询，K = min(E, max_degree + 1) 就够。</li>
+<li><strong>复杂度对比</strong>：Brute O(Q·E)，预处理 O(V·E) build + O(1) query。</li>
+<li><strong>如果是 streaming</strong>（边一条条来）：维护一个 max-heap + lazy deletion。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>"删除"的含义不问清楚</strong>：每次独立 vs 累积，决定算法完全不同。</li>
+<li><strong>多重边</strong>：节点间多条边时，"删 v 的所有边"会一次删多条。</li>
+<li><strong>节点不存在</strong>：早些问，避免边界 crash。</li>
+<li><strong>直接说 max-heap</strong>：能跑通但 follow-up 问"优化"时容易卡，预处理才是 strong-hire 答案。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="10_door-schedule.html" class="prev"><span class="label">← 上一题</span><span class="title">10. 进出门时间表</span></a>
+  <a href="12_circular-fence.html" class="next"><span class="label">下一题 →</span><span class="title">12. 环形 Paint Fence</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

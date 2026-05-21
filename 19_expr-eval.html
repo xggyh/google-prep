@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>19. 嵌套表达式求值 add/sub（LC 224/772 变体） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#python-实现栈迭代解析">Python 实现（栈，迭代解析）</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑这题挂了一个-candidate注意学习">常见坑（这题挂了一个 candidate，注意学习）</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>19. 嵌套表达式求值 add/sub（LC 224/772 变体）</h1>
+  <p>来源：Onsite NG R1 · LC: LC 224/772 变体 <span class="conf-mid">🟡 变体</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">Stack</span>
+    <span class="badge">Parser</span>
+    <span class="badge">Recursion</span>
+    <span class="badge"><span class="conf-mid">🟡 变体</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google onsite NG 被拒
+<strong>原描述</strong>：calculate math expression string，例 <code>add(1, sub(1, 0))</code> 返回 2。用 iterative 而不是 split。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Evaluate a nested function-call expression with <code>add(a, b)</code> and <code>sub(a, b)</code> (and possibly arbitrary nesting). Examples: <code>add(1, sub(1, 0)) → 2</code>, <code>add(add(1, 2), 3) → 6</code>.</p>
+<p><strong>中文</strong>：求嵌套表达式的值，支持 <code>add(a, b)</code> 和 <code>sub(a, b)</code>，参数可以是数字或嵌套调用。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Are arguments always exactly 2? Or variadic (<code>add(1, 2, 3)</code>)? / Spaces allowed in input? / Negative numbers / multi-digit? / Only <code>add</code>/<code>sub</code> or more operations? / Whitespace handling? / Malformed input — throw or return error?</li>
+<li><strong>中</strong>：每个函数总是 2 个参数还是变长？数字可以多位 / 负数 / 浮点？还有其他操作（mul/div）吗？空格如何处理？非法输入怎么办？</li>
+</ul>
+</section>
+
+<section id="python-实现栈迭代解析">
+<h2>Python 实现（栈，迭代解析）</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># 待处理的&quot;操作 + 已收集的参数&quot;</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ch</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+            <span class="c1"># 读操作名</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span> <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+                <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">op_name</span> <span class="o">=</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]</span>
+            <span class="c1"># 期待下一个是 &#39;(&#39;</span>
+            <span class="k">assert</span> <span class="n">expr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">op_name</span><span class="p">,</span> <span class="p">[]))</span>  <span class="c1"># 入栈：当前在收集这个 op 的参数</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">ch</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;(,&#39;</span><span class="p">)):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()):</span>
+                <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]))</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
+        <span class="k">elif</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;,&#39;</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;)&#39;</span><span class="p">:</span>
+            <span class="n">op_name</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">op_name</span> <span class="o">==</span> <span class="s2">&quot;add&quot;</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">op_name</span> <span class="o">==</span> <span class="s2">&quot;sub&quot;</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown op </span><span class="si">{</span><span class="n">op_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stack</span><span class="p">:</span>
+                <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">val</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Malformed expression&quot;</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>画一棵 expression tree</strong>：让面试官看到你想成 AST。</li>
+<li><strong>栈解析 vs 递归下降</strong>：两种思路都能 work。</li>
+<li><strong>明确 token 类型</strong>：function name / <code>(</code> / number / <code>,</code> / <code>)</code>。</li>
+<li><strong>每读到 <code>)</code> 就 pop 一个 frame 求值</strong>：这是核心 invariant。</li>
+<li><strong>dry run</strong> <code>add(1, sub(1, 0))</code>：栈状态一步一步写出来。</li>
+<li><strong>面经原话警告</strong>："Issues with minor syntax issue, out of bound error" — 这题是被拒的主因。面试时一定要<strong>慢、仔细、写完 dry run</strong>。</li>
+</ol>
+</section>
+
+<section id="常见坑这题挂了一个-candidate注意学习">
+<h2>常见坑（这题挂了一个 candidate，注意学习）</h2>
+<ul>
+<li><strong>out of bound</strong>：循环里 <code>expr[j]</code> 没判 <code>j &lt; len(expr)</code>，越界。</li>
+<li><strong>负数处理</strong>：<code>sub(0, 1)</code> 结果是 -1，参数也可能是负数 — 要在数字读取时判断 <code>-</code>。</li>
+<li><strong>多位数</strong>：<code>add(12, 34)</code>，不能只读一位。</li>
+<li><strong>空格</strong>：先 strip 是最稳的。</li>
+<li><strong><code>split</code> 实现的坑</strong>：原帖说"没用 split"，因为 <code>add(1, sub(1, 0))</code> 用 <code>,</code> split 会拆错。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="18_elevator.html" class="prev"><span class="label">← 上一题</span><span class="title">18. 电梯调控器</span></a>
+  <a href="20_detonate-bombs.html" class="next"><span class="label">下一题 →</span><span class="title">20. Detonate the Maximum Bombs</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

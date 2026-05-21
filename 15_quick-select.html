@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15. Quick Select（LC 215 Kth Largest） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#方法对比要主动讲">方法对比（要主动讲）</a></li>
+    <li><a href="#python-实现随机-pivot-quick-select">Python 实现（随机 pivot Quick Select）</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>15. Quick Select（LC 215 Kth Largest）</h1>
+  <p>来源：Cloud SDE Phone · LC: LC 215 <span class="conf-high">✅ 高置信</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">Quickselect</span>
+    <span class="badge">Random Pivot</span>
+    <span class="badge">Partition</span>
+    <span class="badge"><span class="conf-high">✅ 高置信</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google Cloud SDE Phone Coding
+<strong>原描述</strong>：问 quick select，讨论不同方法、pivot 怎么选，最后随便选一个 implement。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given an unsorted array and integer <code>k</code>, return the k-th largest element. Discuss approaches and pivot strategies, then implement one.</p>
+<p><strong>中文</strong>：无序数组 + k，返回第 k 大元素。讨论方法和 pivot 选取，然后实现。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: k is 1-indexed (kth largest) or 0-indexed? / Are duplicates allowed? / Modify input in place ok? / Average vs worst case requirement? / Memory constraint?</li>
+<li><strong>中</strong>：k 是 1-indexed 还是 0-indexed？有重复元素吗？是否允许原地修改？要求平均还是最坏复杂度？是否有内存限制（流式处理？）？</li>
+</ul>
+</section>
+
+<section id="方法对比要主动讲">
+<h2>方法对比（要主动讲）</h2>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>Time</th>
+<th>Space</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sort + index</td>
+<td>O(n log n)</td>
+<td>O(1) or O(n)</td>
+<td>简单，可接受</td>
+</tr>
+<tr>
+<td>Max-heap pop k 次</td>
+<td>O(n + k log n)</td>
+<td>O(n)</td>
+<td>k 小时好</td>
+</tr>
+<tr>
+<td>Min-heap size k</td>
+<td>O(n log k)</td>
+<td>O(k)</td>
+<td>streaming 友好</td>
+</tr>
+<tr>
+<td>Quick select 随机 pivot</td>
+<td>O(n) avg, O(n²) worst</td>
+<td>O(log n) stack</td>
+<td>期望最优</td>
+</tr>
+<tr>
+<td>Median of medians</td>
+<td>O(n) worst</td>
+<td>O(log n)</td>
+<td>理论最优，常数大</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="python-实现随机-pivot-quick-select">
+<h2>Python 实现（随机 pivot Quick Select）</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">random</span>
+
+
+<span class="k">def</span> <span class="nf">quick_select_kth_largest</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;k is 1-indexed: k=1 returns max.&quot;&quot;&quot;</span>
+    <span class="n">nums</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[:]</span>  <span class="c1"># 不污染输入</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">-</span> <span class="n">k</span>  <span class="c1"># 转成第 (n-k) 小</span>
+
+    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">lo</span> <span class="o">==</span> <span class="n">hi</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">nums</span><span class="p">[</span><span class="n">lo</span><span class="p">]</span>
+        <span class="n">pivot_idx</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+        <span class="n">pivot</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">pivot_idx</span><span class="p">]</span>
+        <span class="c1"># 三路划分（处理重复）</span>
+        <span class="n">lt</span><span class="p">,</span> <span class="n">gt</span> <span class="o">=</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">lo</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">gt</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">pivot</span><span class="p">:</span>
+                <span class="n">nums</span><span class="p">[</span><span class="n">lt</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">lt</span><span class="p">]</span>
+                <span class="n">lt</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">pivot</span><span class="p">:</span>
+                <span class="n">nums</span><span class="p">[</span><span class="n">gt</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">gt</span><span class="p">]</span>
+                <span class="n">gt</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="o">&lt;</span> <span class="n">lt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">lt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">target</span> <span class="o">&gt;</span> <span class="n">gt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="n">gt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pivot</span>
+
+    <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>先列出方法表</strong>（不写代码），让面试官知道你了解全景。</li>
+<li><strong>解释 pivot 选取</strong>：
+   - 永远取第一个 → 已排序输入退化到 O(n²)。
+   - 随机 → 期望 O(n)，工程默认选择。
+   - Median of medians → 最坏 O(n)，常数大。</li>
+<li><strong>三路 partition</strong>：解释为什么处理重复元素时三路比 Lomuto/Hoare 更稳。</li>
+<li><strong>复杂度证明</strong>：每次期望减半 → T(n) = T(n/2) + O(n) = O(n)。</li>
+<li><strong>实操选随机 pivot</strong>：写代码，dry run 一次。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>递归到一个空区间</strong>：lo &gt; hi 处理。</li>
+<li><strong>Lomuto partition + 重复元素</strong>：会一直把 pivot 推到一边，O(n²)。</li>
+<li><strong><code>k = 1</code> vs <code>k = 0</code> 边界</strong>：在 docstring 明确。</li>
+<li><strong>没用 <code>random.seed</code></strong>：面试时不会要求，但要主动说"实际 prod 不能用"。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="14_longest-match-token.html" class="prev"><span class="label">← 上一题</span><span class="title">14. 最长匹配分词</span></a>
+  <a href="16_tree-distance.html" class="next"><span class="label">下一题 →</span><span class="title">16. 树中两点距离</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

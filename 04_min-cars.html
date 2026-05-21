@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04. 租车最少辆数（LC 253 Meeting Rooms II 变体） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>04. 租车最少辆数（LC 253 Meeting Rooms II 变体）</h1>
+  <p>来源：L4 SWE AI/ML R2 · LC: LC 253 <span class="conf-high">✅ 高置信</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">Sweep Line</span>
+    <span class="badge">Heap</span>
+    <span class="badge">OOP</span>
+    <span class="badge"><span class="conf-high">✅ 高置信</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google L4 SWE AI/ML 全套过经 R2
+<strong>原描述</strong>：一个 list of car rental requests，每个有 pickup 和 return time，给 Car class 有 <code>id</code> 和 <code>rental_record=[]</code>。求最少需要多少辆车，并记录每辆车的 assignment。Follow-up：sharded logs across servers/regions 怎么处理。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given car rental requests <code>[(pickup_time, return_time), ...]</code>. Compute minimum number of cars needed. Then assign each request to a specific <code>Car</code> instance and append to <code>car.rental_record</code>. Follow-up: requests come from logs sharded across many servers/regions — how to handle?</p>
+<p><strong>中文</strong>：一组租车请求 <code>(取车时间, 还车时间)</code>。求最少需要多少辆车，并把每个请求分配到具体的 Car 对象，更新其 <code>rental_record</code>。Follow-up：日志分片到多服务器/多地区，如何处理？</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Is <code>return_time</code> exclusive (car can be re-rented at the same instant)? / Are requests sorted? / Can a car be used by multiple regions? / For shard follow-up: do we need exact answer or approximation? Real-time or batch?</li>
+<li><strong>中</strong>：还车时间是开区间吗（同一时刻能立即出租）？输入是否已排序？是否要求 stable assignment（同样输入给同样答案）？Follow-up：分片是要精确解还是近似？实时还是批处理？</li>
+</ul>
+</section>
+
+<section id="python-实现">
+<h2>Python 实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+
+<span class="k">class</span> <span class="nc">Car</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">car_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">car_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rental_record</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<span class="k">def</span> <span class="nf">min_cars</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 堆: (车的下次可用时间, car_id, Car 对象)</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">next_id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">pickup</span><span class="p">,</span> <span class="n">ret</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pool</span> <span class="ow">and</span> <span class="n">pool</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">pickup</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">car</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">car</span> <span class="o">=</span> <span class="n">Car</span><span class="p">(</span><span class="n">next_id</span><span class="p">)</span>
+            <span class="n">cars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">car</span><span class="p">)</span>
+            <span class="n">next_id</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">car</span><span class="o">.</span><span class="n">rental_record</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pickup</span><span class="p">,</span> <span class="n">ret</span><span class="p">))</span>
+        <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">car</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">cars</span><span class="p">),</span> <span class="n">cars</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>先想扫描线</strong>：把所有 (pickup, +1) 和 (return, -1) 排序，遍历过程中维护"当前在用的车数"的最大值 — 这只能算车数，无法分配。</li>
+<li><strong>改用 min-heap</strong>：堆里存"每辆已存在车的还车时间"，新请求来时看堆顶最早的车是否已还（pickup ≥ heap_top.return），是就复用，否就新开。</li>
+<li><strong>关键决策</strong>：复用 vs 新开车的判定 — 必须明确说为什么贪心是对的（交换论证）。</li>
+<li><strong>复杂度</strong>：O(n log n)。</li>
+<li><strong>Follow-up（sharding）</strong>：可以提到这几条思路 — (a) 中央协调器收集所有 region 的 (pickup, return) 事件，仍按时间排序统一处理；(b) 如果只要 count，可以用 sketch / Bloom 但精度不够，租车场景需要精确；(c) 时间窗分桶 + map-reduce。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>用 sorted set 但 Python 没原生</strong>：必须用 heapq，注意 tuple 比较时 Car 对象不可比，所以加 car.id 作 tiebreaker。</li>
+<li><strong><code>&lt;=</code> vs <code>&lt;</code></strong>：还车时间到了能不能立刻再租？务必先问。</li>
+<li><strong>以为只要 count</strong>：题目明确说"要 record 到每辆车"，扫描线不够。</li>
+<li><strong>Follow-up 答得太工程</strong>：Google 想听<strong>算法层面</strong>的权衡（精确 vs 近似，consistency），别只讲 Kafka/Redis 这类工具。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="03_dijkstra-via.html" class="prev"><span class="label">← 上一题</span><span class="title">03. Dijkstra 经过指定点</span></a>
+  <a href="05_text-editor.html" class="next"><span class="label">下一题 →</span><span class="title">05. Text Editor / Book Keeping System</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

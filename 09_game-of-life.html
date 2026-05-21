@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>09. Game of Life（LC 289） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#python-实现in-place-用状态编码">Python 实现（in-place 用状态编码）</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>09. Game of Life（LC 289）</h1>
+  <p>来源：SDE NG VO R2 题1 · LC: LC 289 <span class="conf-high">✅ 高置信</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">In-place</span>
+    <span class="badge">Simulation</span>
+    <span class="badge"><span class="conf-high">✅ 高置信</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google SDE NG VO R2 第一题
+<strong>原描述</strong>：李扣尔把酒（LC 289）。Follow-up：in-place modify。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given an <code>m x n</code> board of cells, each <code>0</code> (dead) or <code>1</code> (alive). Update to the next generation according to Conway's rules:
+1. Live cell with &lt;2 live neighbors → dies (underpopulation).
+2. Live cell with 2 or 3 → lives.
+3. Live cell with &gt;3 → dies (overpopulation).
+4. Dead cell with exactly 3 → becomes alive.
+Follow-up: modify in-place (O(1) extra space).</p>
+<p><strong>中文</strong>：m×n 棋盘，1 活 0 死。按 Conway 生命游戏规则更新到下一代。Follow-up：原地修改。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Are all 8 neighbors considered (including diagonals)? / Update synchronously (all cells based on current state) or asynchronously? / What about the infinite board edge case in real Conway — here it's fixed board? / Multiple steps or just one?</li>
+<li><strong>中</strong>：邻居包括对角线吗（应该是 8 邻）？所有格子同时更新（基于上一代）？真实 Conway 是无限棋盘，这里是固定边界？只做一步还是多步？</li>
+</ul>
+</section>
+
+<section id="python-实现in-place-用状态编码">
+<h2>Python 实现（in-place 用状态编码）</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">gameOfLife</span><span class="p">(</span><span class="n">board</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">board</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">board</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">return</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">board</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">board</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 编码：</span>
+    <span class="c1"># 0 -&gt; 0 (dead, stays dead)</span>
+    <span class="c1"># 1 -&gt; 1 (live, stays live)</span>
+    <span class="c1"># 2 -&gt; live, becomes dead next gen</span>
+    <span class="c1"># 3 -&gt; dead, becomes live next gen</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">live</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">di</span> <span class="ow">in</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">dj</span> <span class="ow">in</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">di</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dj</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">ni</span><span class="p">,</span> <span class="n">nj</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">di</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="n">dj</span>
+                    <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">ni</span> <span class="o">&lt;</span> <span class="n">m</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">nj</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">board</span><span class="p">[</span><span class="n">ni</span><span class="p">][</span><span class="n">nj</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                        <span class="n">live</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="p">(</span><span class="n">live</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">live</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">):</span>
+                <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">live</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>先写 O(mn) 额外空间版</strong>：复制一份再修改，最清晰。</li>
+<li><strong>Follow-up 抛出"in-place"</strong>：解释为什么直接改会乱 — 当前格变了，邻居算邻居数时看到的就是错的。</li>
+<li><strong>状态编码技巧</strong>：用 2 和 3 区分"曾经活/死、新一代死/活"，这是最常见的 O(1) 额外空间解法。</li>
+<li><strong>第二次遍历恢复</strong>：把 2 和 3 还原成 0 和 1。</li>
+<li><strong>更进一步 follow-up</strong>：如果棋盘<strong>无限大</strong>怎么办？答：只存活细胞的坐标 set，对每个活细胞的邻居计数 → HashLife / sparse representation。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>同步更新理解错</strong>：每个格子的新状态必须基于<strong>所有格子的原始状态</strong>，不能边算边改。</li>
+<li><strong>位运算编码反而出错</strong>：状态编码用整数 0/1/2/3 比 bitmask 清晰。</li>
+<li><strong>边界判断 <code>0 &lt;= ni &lt; m</code></strong>：少写一个 <code>=</code> 直接越界。</li>
+<li><strong>"无限大棋盘"的 follow-up</strong>：很多人没准备，提前练一下。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="08_delete-directory.html" class="prev"><span class="label">← 上一题</span><span class="title">08. 删除目录递归实现</span></a>
+  <a href="10_door-schedule.html" class="next"><span class="label">下一题 →</span><span class="title">10. 进出门时间表</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

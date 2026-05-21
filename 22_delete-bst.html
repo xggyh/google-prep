@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>22. Delete Node in BST（LC 450） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+    <li><a href="#从被拒-成功的帖子中提炼的高优先级注意点">从被拒 / 成功的帖子中提炼的高优先级注意点</a></li>
+    <li><a href="#必须练的算法-数据结构按面经频率">必须练的算法 / 数据结构（按面经频率）</a></li>
+    <li><a href="#时间分配建议45-分钟一题">时间分配建议（45 分钟一题）</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>22. Delete Node in BST（LC 450）</h1>
+  <p>来源：🐶家挂经 · LC: LC 450 <span class="conf-high">✅ 高置信</span> · 难度: <span class="diff-med">Med</span></p>
+  <div class="meta">
+    <span class="badge">BST</span>
+    <span class="badge">Tree</span>
+    <span class="badge">Recursion</span>
+    <span class="badge"><span class="conf-high">✅ 高置信</span></span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：🐶家挂经
+<strong>原描述</strong>："题号45️⃣零" = LC 450，原帖说"没咋练结果来个树结构所以觉得是 hard"。</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given the root of a BST and a key, delete the node with that key. Return the modified BST root.</p>
+<p><strong>中文</strong>：BST 中删除值为 key 的节点，返回新的 root。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Is BST guaranteed to have unique values? / What if key doesn't exist — return unchanged? / Need to maintain BST property after delete (yes obvious)? / Should we return reference to the original modified tree, or a new tree?</li>
+<li><strong>中</strong>：BST 中值是否唯一？key 不存在时返回什么？需要返回原 root 还是新 root（修改原树 vs 不可变）？空树？</li>
+</ul>
+</section>
+
+<section id="python-实现">
+<h2>Python 实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">right</span>
+
+
+<span class="k">def</span> <span class="nf">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="o">&lt;</span> <span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">:</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">key</span> <span class="o">&gt;</span> <span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">:</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># 找到了要删的节点</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="n">right</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="n">left</span>
+        <span class="c1"># 两个子节点：找右子树最小值代替</span>
+        <span class="n">succ</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">right</span>
+        <span class="k">while</span> <span class="n">succ</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+            <span class="n">succ</span> <span class="o">=</span> <span class="n">succ</span><span class="o">.</span><span class="n">left</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">succ</span><span class="o">.</span><span class="n">val</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">succ</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">root</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>3 种情况分类清晰讲出来</strong>：
+   - 叶子：直接删。
+   - 一个子节点：用子节点替换。
+   - 两个子节点：用右子树最小值（或左子树最大值）的值替换 + 递归删那个 successor。</li>
+<li><strong>画图走一遍</strong>：5 节点的 BST，删 root，让面试官跟。</li>
+<li><strong>复杂度</strong>：O(h)，平衡 BST 是 O(log n)，最坏 O(n)。</li>
+<li><strong>可以提 Morris 风格的 O(1) 空间</strong>，但不必写。</li>
+<li><strong>Follow-up 可能问</strong>：保持 AVL/Red-Black 平衡？那是另一题。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>找 successor 的位置</strong>：右子树<strong>最左</strong>节点（不是右子树最小的间接路径）。</li>
+<li><strong>替换后忘记递归删</strong>：把 successor 的值复制到 root 后，要在<strong>右子树</strong>里把 successor 真的删掉。</li>
+<li><strong>空树/key 不存在</strong>：return root 就行，但要主动覆盖。</li>
+<li><strong>修改原树 vs 返回新树</strong>：题目通常允许 in-place，但要确认。</li>
+</ul>
+<hr />
+<h2 id="tips">通用应试 Tips（结合面经里失败 / 成功的关键点）</h2>
+</section>
+
+<section id="从被拒-成功的帖子中提炼的高优先级注意点">
+<h2>从被拒 / 成功的帖子中提炼的高优先级注意点</h2>
+<ol>
+<li><strong>澄清问题被多次表扬为加分项</strong>（多份面经的 Hire/Strong Hire 评语都提到 "cleared ambiguities was key"）。</li>
+<li><strong>Dry run 至少做一遍</strong>（多份成功面经里都强调）。</li>
+<li><strong>"Minor syntax issue" 真的能挂人</strong>（NG R1 那位被这个理由拒了）— <strong>慢一点、写干净一点</strong>，特别是 out-of-bound。</li>
+<li><strong>Brute force → Optimized 的递进</strong>：SWE II L3 那题特别提到"从 brute 到 optimized 的进阶让面试官满意"。</li>
+<li><strong>OOP 题目重 trade-off 讨论</strong>（L6 评论说 25 分钟有效 coding，剩下都在 clarify）— <strong>接受 clarify 时间长是 feature 不是 bug</strong>。</li>
+<li><strong>Google Doc 真的没补全</strong>（一份面经里专门问了"是用 Google doc 写题吗" — "是的"）— <strong>平时关掉 IDE 智能提示练</strong>。</li>
+<li><strong>Time/Space complexity 主动给</strong>，每题写完都要分析一句。</li>
+</ol>
+</section>
+
+<section id="必须练的算法-数据结构按面经频率">
+<h2>必须练的算法 / 数据结构（按面经频率）</h2>
+<table>
+<thead>
+<tr>
+<th>主题</th>
+<th>出现次数</th>
+<th>必练 LC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Graph: BFS/DFS/Dijkstra</td>
+<td>6+</td>
+<td>1101, 743, 79, 1740, 2101</td>
+</tr>
+<tr>
+<td>Heap / Sweep line</td>
+<td>3+</td>
+<td>253, 215, 1167</td>
+</tr>
+<tr>
+<td>DFS + Backtrack</td>
+<td>3+</td>
+<td>51 (N-Queens), 79, custom 网格题</td>
+</tr>
+<tr>
+<td>String parsing</td>
+<td>4+</td>
+<td>224, 76, KMP 模板</td>
+</tr>
+<tr>
+<td>OOP 设计</td>
+<td>4+</td>
+<td>588, 146 (LRU), 自定义</td>
+</tr>
+<tr>
+<td>DP / 数位 DP</td>
+<td>3+</td>
+<td>198, 213, 276, 数位 DP 模板</td>
+</tr>
+<tr>
+<td>Tree / BST</td>
+<td>3+</td>
+<td>450, 1740, 236 (LCA)</td>
+</tr>
+<tr>
+<td>Sliding Window</td>
+<td>2+</td>
+<td>76, 209, 滑窗模板</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section id="时间分配建议45-分钟一题">
+<h2>时间分配建议（45 分钟一题）</h2>
+<ul>
+<li>0:00-0:03 复述题目 + 举例</li>
+<li>0:03-0:08 澄清问题（5 个左右）</li>
+<li>0:08-0:13 Brute force + 优化思路</li>
+<li>0:13-0:18 数据结构选择 + 复杂度</li>
+<li>0:18-0:35 写代码</li>
+<li>0:35-0:40 Dry run + 复杂度分析</li>
+<li>0:40-0:45 Follow-up 讨论 / 反问</li>
+</ul>
+<hr />
+<h2 id="_1">后续可加练的方向</h2>
+<p>按面经里"Hire"评语反推，最值得加练：
+1. <strong>Graph + 贪心</strong>（必经点的 Dijkstra、删点求最大边、bomb 引爆）
+2. <strong>OOP 设计 + Trade-off 讨论</strong>（电梯、文本编辑器、文件系统）
+3. <strong>数位 DP</strong>（Perfect Wake Number 这类）
+4. <strong>环形 / 区间 DP</strong>（环形 Paint Fence、必经点路径）
+5. <strong>滑动窗口的非套路应用</strong>（项链切割 2 cuts 转滑窗）</p>
+<p>祝面试顺利 🤝</p>
+</section>
+
+<div class="qnav">
+  <a href="21_word-search-graph.html" class="prev"><span class="label">← 上一题</span><span class="title">21. Word Search 图变体</span></a>
+  <a href="index.html" class="next"><span class="label">↩</span><span class="title">返回入口</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

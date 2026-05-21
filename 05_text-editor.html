@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05. Text Editor / Book Keeping System（LC 588/1166 思想） · Google Coding 面经</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#可能题型与思路">可能题型与思路</a></li>
+    <li><a href="#通用澄清问题">通用澄清问题</a></li>
+    <li><a href="#python-实现text-editor-lc-2296-风格">Python 实现：Text Editor (LC 2296 风格)</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">所有题目</div>
+  <ul>
+    <li><a href="01_friend-logs.html">01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>05. Text Editor / Book Keeping System（LC 588/1166 思想）</h1>
+  <p>来源：L4 SWE 2026 R1 · LC: LC 588 / 2296 <span class="conf-mid">🟡 变体</span> · 难度: <span class="diff-med">Med-Hard</span></p>
+  <div class="meta">
+    <span class="badge">OOP Design</span>
+    <span class="badge">Two Stacks</span>
+    <span class="badge">Trade-off</span>
+    <span class="badge"><span class="conf-mid">🟡 变体</span></span>
+    <span class="badge"><span class="diff-med">Med-Hard</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>来源</strong>：Google L4 SWE Interview Experience 2026 R1
+<strong>原描述</strong>：类似 leetcode 上的 text editor / book keeping system 类题，重点考 OOP design、数据结构 trade-off、内存考量、time/space complexity。</p>
+</section>
+
+<section id="可能题型与思路">
+<h2>可能题型与思路</h2>
+<p>这类题目变体很多，最常见三种：</p>
+<p><strong>(a) Simple Text Editor (LC 2296)</strong> — 实现 <code>addText / deleteText / cursorLeft / cursorRight</code>。
+<strong>(b) Design In-Memory File System (LC 588)</strong> — <code>ls / mkdir / addContentToFile / readContentFromFile</code>。
+<strong>(c) Custom Book Keeping</strong> — 借阅/归还/查询，多种查询模式。</p>
+</section>
+
+<section id="通用澄清问题">
+<h2>通用澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: What operations must be supported? / Expected QPS / scale? / Are there ordering / sorting requirements? / Multi-user (concurrency)? / Persistence required? / Optimize for read or write?</li>
+<li><strong>中</strong>：要支持哪些操作？数据规模？是否要排序/有序遍历？是否多用户并发？要持久化吗？读多还是写多？操作的时间复杂度有没有要求？</li>
+</ul>
+</section>
+
+<section id="python-实现text-editor-lc-2296-风格">
+<h2>Python 实现：Text Editor (LC 2296 风格)</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TextEditor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;O(1) amortized for all ops using two stacks split at cursor.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># characters before cursor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># characters after cursor (reversed for stack semantics)</span>
+
+    <span class="k">def</span> <span class="nf">addText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deleteText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">))</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">k</span>
+
+    <span class="k">def</span> <span class="nf">cursorLeft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+            <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:])</span>
+
+    <span class="k">def</span> <span class="nf">cursorRight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+            <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:])</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>先 clarify 操作集</strong>：千万别上手就写，让面试官说清楚 API。</li>
+<li><strong>画 ADT 草图</strong>：把每个 op 的输入/输出列出来，让面试官点头确认。</li>
+<li><strong>数据结构候选</strong>：array (慢)、linked list (随机访问慢)、gap buffer / two stacks (经典文本编辑器实现) — 主动讲 trade-off。</li>
+<li><strong>持续 dry run</strong>：每个 API 写完先用例子走一遍。</li>
+<li><strong>OOP 清洁</strong>：内部状态封装好，方法名一目了然，不要把 "private" 逻辑暴露出去。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>直接写一个数据结构而不讨论替代</strong>：Google 评分明确包含 trade-off discussion，没讨论就丢分。</li>
+<li><strong>没有 dry run</strong>：题目里就提到 "continuous dry runs" 是给 Hire 的关键。</li>
+<li><strong>过早优化</strong>：先写干净的 O(N) 版本，让面试官提"能不能更快"再优化。</li>
+<li><strong>忘记 edge case</strong>：空字符串、cursor 已经在边界、k 比剩余长度大。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="04_min-cars.html" class="prev"><span class="label">← 上一题</span><span class="title">04. 租车最少辆数</span></a>
+  <a href="06_huffman.html" class="next"><span class="label">下一题 →</span><span class="title">06. Huffman 编码树生成</span></a>
+</div>
+
+<footer>
+  Google Coding 面经汇总 · 整理自一亩三分地 2026.4-5 · 共 22 题
+</footer>
+
+</main>
+</body>
+</html>

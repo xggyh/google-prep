@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Coding 面经汇总 · 2026.4-5</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  body { display: block; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 28px 24px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 18px 0 28px;
+  }
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    transition: all 0.2s ease;
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    position: relative;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(26, 115, 232, 0.13);
+    border-color: var(--g-blue);
+  }
+  .card .num {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--g-blue);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .card h3 {
+    margin: 6px 0 8px;
+    font-size: 16px;
+    color: var(--text);
+    border: none;
+    padding: 0;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .card .src {
+    color: var(--text2);
+    font-size: 12px;
+    margin: 2px 0 8px;
+  }
+  .card .lc {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--accent);
+    color: var(--g-blue);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .card .tags { margin-top: 8px; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 18px 0 24px;
+  }
+  .stat {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .stat .v { font-size: 24px; font-weight: 700; color: var(--g-blue); }
+  .stat .l { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  .group-title {
+    font-size: 18px;
+    color: var(--text);
+    margin: 22px 0 8px;
+    padding-left: 10px;
+    border-left: 4px solid var(--g-blue);
+    font-weight: 600;
+  }
+  .tips-card {
+    background: var(--accent);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 18px 0;
+  }
+  .tips-card h3 {
+    color: var(--g-blue);
+    margin: 0 0 8px;
+    border: none;
+    padding: 0;
+  }
+  .tips-card ul { margin-left: 22px; }
+
+  @media (max-width: 700px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>🎯 Google Coding 面经汇总</h1>
+  <p>22 道独立 coding 题 · 提取自 16 份一亩三分地面经 · 2026.4–5 版</p>
+  <div class="meta">
+    <span class="badge">🔵 SWE / Cloud SDE</span>
+    <span class="badge">🟢 AI/ML L4</span>
+    <span class="badge">🟡 L3 / L4 / L5 / L6</span>
+    <span class="badge">📅 2026-05 版</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="v">22</div><div class="l">独立 coding 题</div></div>
+  <div class="stat"><div class="v">16</div><div class="l">面经 PDF 来源</div></div>
+  <div class="stat"><div class="v">10</div><div class="l">✅ 直接对应 LC</div></div>
+  <div class="stat"><div class="v">45 min</div><div class="l">每题完整答题节奏</div></div>
+</div>
+
+
+<div class="tips-card">
+  <h3>🔑 从面经里反推的 Strong Hire 要点</h3>
+  <ul>
+    <li><strong>澄清问题</strong>：多份成功面经把这一点列为加分项（"clarifications helped" / "communication was the key"）。</li>
+    <li><strong>Dry run 至少做一遍</strong>：被多份 Hire 评语点名。</li>
+    <li><strong>"Minor syntax issue" 真的能挂人</strong>（NG 那位的拒信原话）— 写慢一点，写干净一点。</li>
+    <li><strong>Brute force → Optimized</strong> 的递进非常加分（SWE II L3 那题特别提到）。</li>
+    <li><strong>Time/Space complexity 主动给</strong>，每题都要。</li>
+    <li><strong>Google Doc 真的没补全</strong>，平时关掉 IDE 智能提示练。</li>
+  </ul>
+</div>
+
+
+<div class="group-title">📚 22 道题（点击进入深度展开）</div>
+
+<div class="grid">
+    <a href="01_friend-logs.html" class="card">
+      <div class="num">01</div>
+      <h3>朋友圈与解除好友</h3>
+      <div class="src">L4 AI/ML 四轮 R3 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 1101</span> <span class="conf-high">✅ 高置信</span>
+      <div class="tags"><span class="tag-pill">Union-Find</span><span class="tag-pill">BFS</span><span class="tag-pill">Graph</span></div>
+    </a>
+    <a href="02_necklace-split.html" class="card">
+      <div class="num">02</div>
+      <h3>项链切割平分 D/R</h3>
+      <div class="src">L4 AI/ML 四轮 R4 · <span class="diff-hard">Hard</span></div>
+      <span class="lc">无直接 LC</span> <span class="conf-low">❓ 无对应</span>
+      <div class="tags"><span class="tag-pill">Sliding Window</span><span class="tag-pill">Greedy</span><span class="tag-pill">Custom</span></div>
+    </a>
+    <a href="03_dijkstra-via.html" class="card">
+      <div class="num">03</div>
+      <h3>Dijkstra 经过指定点</h3>
+      <div class="src">L4 SWE AI/ML R1 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 743/1928 变体</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">Dijkstra</span><span class="tag-pill">Graph</span><span class="tag-pill">Heap</span></div>
+    </a>
+    <a href="04_min-cars.html" class="card">
+      <div class="num">04</div>
+      <h3>租车最少辆数</h3>
+      <div class="src">L4 SWE AI/ML R2 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 253</span> <span class="conf-high">✅ 高置信</span>
+      <div class="tags"><span class="tag-pill">Sweep Line</span><span class="tag-pill">Heap</span><span class="tag-pill">OOP</span></div>
+    </a>
+    <a href="05_text-editor.html" class="card">
+      <div class="num">05</div>
+      <h3>Text Editor / Book Keeping System</h3>
+      <div class="src">L4 SWE 2026 R1 · <span class="diff-med">Med-Hard</span></div>
+      <span class="lc">LC 588 / 2296</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">OOP Design</span><span class="tag-pill">Two Stacks</span><span class="tag-pill">Trade-off</span></div>
+    </a>
+    <a href="06_huffman.html" class="card">
+      <div class="num">06</div>
+      <h3>Huffman 编码树生成</h3>
+      <div class="src">L4 SWE 2026 R4 / L6 R2 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 1167 变体</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">Greedy</span><span class="tag-pill">Heap</span><span class="tag-pill">Tree</span></div>
+    </a>
+    <a href="07_place-flowers.html" class="card">
+      <div class="num">07</div>
+      <h3>N×N 网格放花</h3>
+      <div class="src">L4 两轮 Onsite R1 · <span class="diff-hard">Hard</span></div>
+      <span class="lc">无直接 LC</span> <span class="conf-low">❓ 无对应</span>
+      <div class="tags"><span class="tag-pill">DFS</span><span class="tag-pill">Backtrack</span><span class="tag-pill">N-Queens</span></div>
+    </a>
+    <a href="08_delete-directory.html" class="card">
+      <div class="num">08</div>
+      <h3>删除目录递归实现</h3>
+      <div class="src">L4 两轮 Onsite R2 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 1233 思想</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">DFS</span><span class="tag-pill">Recursion</span><span class="tag-pill">File System</span></div>
+    </a>
+    <a href="09_game-of-life.html" class="card">
+      <div class="num">09</div>
+      <h3>Game of Life</h3>
+      <div class="src">SDE NG VO R2 题1 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 289</span> <span class="conf-high">✅ 高置信</span>
+      <div class="tags"><span class="tag-pill">In-place</span><span class="tag-pill">Simulation</span></div>
+    </a>
+    <a href="10_door-schedule.html" class="card">
+      <div class="num">10</div>
+      <h3>进出门时间表</h3>
+      <div class="src">SDE NG VO R2 题2 · <span class="diff-hard">Hard</span></div>
+      <span class="lc">无直接 LC</span> <span class="conf-low">❓ 无对应</span>
+      <div class="tags"><span class="tag-pill">Queue</span><span class="tag-pill">Heap</span><span class="tag-pill">Simulation</span></div>
+    </a>
+    <a href="11_max-edge-remove.html" class="card">
+      <div class="num">11</div>
+      <h3>删点后图中最大边权</h3>
+      <div class="src">SWE II L3 R1 · <span class="diff-med">Med</span></div>
+      <span class="lc">无直接 LC</span> <span class="conf-low">❓ 无对应</span>
+      <div class="tags"><span class="tag-pill">Graph</span><span class="tag-pill">Preprocessing</span><span class="tag-pill">Heap</span></div>
+    </a>
+    <a href="12_circular-fence.html" class="card">
+      <div class="num">12</div>
+      <h3>环形 Paint Fence</h3>
+      <div class="src">Circular Paint Fence · <span class="diff-hard">Hard</span></div>
+      <span class="lc">LC 276 变体</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">DP</span><span class="tag-pill">Circular</span></div>
+    </a>
+    <a href="13_perfect-wake.html" class="card">
+      <div class="num">13</div>
+      <h3>Perfect Wake Number 计数</h3>
+      <div class="src">Coding R1 · <span class="diff-hard">Hard</span></div>
+      <span class="lc">数位 DP</span> <span class="conf-low">❓ 无对应</span>
+      <div class="tags"><span class="tag-pill">Digit DP</span><span class="tag-pill">Bitmask</span><span class="tag-pill">Memoization</span></div>
+    </a>
+    <a href="14_longest-match-token.html" class="card">
+      <div class="num">14</div>
+      <h3>最长匹配分词</h3>
+      <div class="src">Google r1 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 139/140 类</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">Trie</span><span class="tag-pill">Greedy</span><span class="tag-pill">String</span></div>
+    </a>
+    <a href="15_quick-select.html" class="card">
+      <div class="num">15</div>
+      <h3>Quick Select</h3>
+      <div class="src">Cloud SDE Phone · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 215</span> <span class="conf-high">✅ 高置信</span>
+      <div class="tags"><span class="tag-pill">Quickselect</span><span class="tag-pill">Random Pivot</span><span class="tag-pill">Partition</span></div>
+    </a>
+    <a href="16_tree-distance.html" class="card">
+      <div class="num">16</div>
+      <h3>树中两点距离</h3>
+      <div class="src">Cloud SDE Coding 1 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 1740</span> <span class="conf-high">✅ 高置信</span>
+      <div class="tags"><span class="tag-pill">BFS</span><span class="tag-pill">LCA</span><span class="tag-pill">Tree</span></div>
+    </a>
+    <a href="17_substr-prefix.html" class="card">
+      <div class="num">17</div>
+      <h3>以 target 为前缀的子串计数 + 最小包含子串</h3>
+      <div class="src">Cloud SDE Coding 2 · <span class="diff-med">Med</span></div>
+      <span class="lc">无直接 LC</span> <span class="conf-low">❓ 无对应</span>
+      <div class="tags"><span class="tag-pill">KMP</span><span class="tag-pill">Z-Algorithm</span><span class="tag-pill">String</span></div>
+    </a>
+    <a href="18_elevator.html" class="card">
+      <div class="num">18</div>
+      <h3>电梯调控器</h3>
+      <div class="src">L6 R1 · <span class="diff-hard">Hard</span></div>
+      <span class="lc">OOP 设计</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">OOP Design</span><span class="tag-pill">State Machine</span><span class="tag-pill">SCAN</span></div>
+    </a>
+    <a href="19_expr-eval.html" class="card">
+      <div class="num">19</div>
+      <h3>嵌套表达式求值 add/sub</h3>
+      <div class="src">Onsite NG R1 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 224/772 变体</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">Stack</span><span class="tag-pill">Parser</span><span class="tag-pill">Recursion</span></div>
+    </a>
+    <a href="20_detonate-bombs.html" class="card">
+      <div class="num">20</div>
+      <h3>Detonate the Maximum Bombs</h3>
+      <div class="src">Onsite NG R2 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 2101</span> <span class="conf-high">✅ 高置信</span>
+      <div class="tags"><span class="tag-pill">BFS</span><span class="tag-pill">Graph</span><span class="tag-pill">Geometry</span></div>
+    </a>
+    <a href="21_word-search-graph.html" class="card">
+      <div class="num">21</div>
+      <h3>Word Search 图变体</h3>
+      <div class="src">果家 onsite Coding 1 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 79 变体</span> <span class="conf-mid">🟡 变体</span>
+      <div class="tags"><span class="tag-pill">DFS</span><span class="tag-pill">Backtrack</span><span class="tag-pill">Graph</span></div>
+    </a>
+    <a href="22_delete-bst.html" class="card">
+      <div class="num">22</div>
+      <h3>Delete Node in BST</h3>
+      <div class="src">🐶家挂经 · <span class="diff-med">Med</span></div>
+      <span class="lc">LC 450</span> <span class="conf-high">✅ 高置信</span>
+      <div class="tags"><span class="tag-pill">BST</span><span class="tag-pill">Tree</span><span class="tag-pill">Recursion</span></div>
+    </a>
+</div>
+
+<div class="group-title">🧭 通用应试流程（每题都用得上）</div>
+<section>
+<table>
+<thead><tr><th>时间段</th><th>动作</th><th>避免</th></tr></thead>
+<tbody>
+<tr><td>0:00–0:03</td><td>复述题目 + 举一个具体例子</td><td>跳过直接开始问</td></tr>
+<tr><td>0:03–0:08</td><td>问 3–5 个澄清问题，确认 scope</td><td>连珠炮 10 个问题</td></tr>
+<tr><td>0:08–0:13</td><td>给 brute force + 优化方向（先要面试官点头）</td><td>直接写最优解</td></tr>
+<tr><td>0:13–0:18</td><td>讨论数据结构选型 + 复杂度</td><td>不讨论 trade-off</td></tr>
+<tr><td>0:18–0:35</td><td>边写边讲，每写完一段先 dry run 一遍</td><td>沉默写代码</td></tr>
+<tr><td>0:35–0:40</td><td>主动选 1-2 个 test case 完整 dry run</td><td>等面试官说"跑一下"</td></tr>
+<tr><td>0:40–0:45</td><td>复杂度分析 + Follow-up 讨论 + 反问</td><td>不分析复杂度</td></tr>
+</tbody>
+</table>
+</section>
+
+<footer>
+  整理自一亩三分地 2026.4–5 Google 面经 PDF · 配合 <code>coding_questions.md</code> 一起复习
+</footer>
+
+</div>
+</body>
+</html>
