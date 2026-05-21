@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现建图-bfs">Python 实现（建图 + BFS）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现建图-bfs">Python 完整实现（建图 + BFS）</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -80,8 +83,79 @@
 </ul>
 </section>
 
-<section id="python-实现建图-bfs">
-<h2>Python 实现（建图 + BFS）</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这题有 2 个坑</strong>，识别出来就是 strong hire：
+1. <strong>不是无向图</strong>：i 能引爆 j（dist ≤ r_i）<strong>不蕴含</strong> j 能引爆 i（需要 dist ≤ r_j）— 半径不对称！
+2. <strong>距离比较用平方</strong>：避免 <code>sqrt</code> 浮点误差。</p>
+<p><strong>算法 = 建有向图 + 枚举起点 BFS</strong>：
+- 建图：对所有 (i, j) 检查"i 能引爆 j 吗"，能就加边 <code>i → j</code>。
+- 枚举每个炸弹 i 作为起点跑 BFS，记录可达炸弹数。
+- 返回所有起点的最大值。</p>
+<p><strong>复杂度</strong>：建图 O(n²)，n 个 BFS 各 O(n²) → O(n³)。n ≤ 100 时完全 OK。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 建有向图</strong>
+- 遍历所有 (i, j)，i ≠ j。
+- 计算 <code>dist² = (x1-x2)² + (y1-y2)²</code>。
+- 比较 <code>dist² &lt;= r1²</code>（r1 是 i 的半径）。
+- 是就加边 <code>i → j</code>。</p>
+<p><strong>Step 2 · 从单个起点 BFS</strong>
+- 标准 BFS，用 set 记录已 visited。
+- 返回 <code>len(visited)</code>。</p>
+<p><strong>Step 3 · 枚举所有起点 + 取最大</strong>
+- <code>return max(bfs(i) for i in range(n))</code>。</p>
+<p><strong>Step 4 · 关键 idiom：距离平方</strong>
+- 不要写 <code>math.sqrt(...) &lt;= r</code>。
+- 写 <code>dx*dx + dy*dy &lt;= r*r</code>。
+- 避免浮点 / 提速。</p>
+<p><strong>Step 5 · Edge cases</strong>
+- 两个炸弹同位置：必须问。如果同坐标，互相一定能引爆（dist=0 ≤ 任何 r）。
+- 单个炸弹：return 1。
+- 半径 0：只能炸自己。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 建有向图</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">deque</span>
+
+<span class="k">def</span> <span class="nf">maximumDetonation</span><span class="p">(</span><span class="n">bombs</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bombs</span><span class="p">)</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">r1</span> <span class="o">=</span> <span class="n">bombs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">bombs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="c1"># i 能引爆 j ?</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">r1</span> <span class="o">*</span> <span class="n">r1</span><span class="p">:</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 2 · 单起点 BFS</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">bfs</span><span class="p">(</span><span class="n">start</span><span class="p">):</span>
+        <span class="n">visited</span> <span class="o">=</span> <span class="p">{</span><span class="n">start</span><span class="p">}</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([</span><span class="n">start</span><span class="p">])</span>
+        <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                    <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">visited</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 枚举起点</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">bfs</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现建图-bfs">
+<h2>Python 完整实现（建图 + BFS）</h2>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">deque</span>
 
 

@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -80,8 +83,78 @@
 </ul>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>LC 79 在 2D grid 上的算法是 DFS + 4 邻接 + visited backtracking</strong>。这里把 grid 换成一般 graph，<strong>算法骨架完全一样</strong>，只是邻接关系从"4 个方向"变成"邻接表"。</p>
+<p><strong>搜索路径</strong>：
+- 选一个起始节点（字符 = word[0]）。
+- DFS：当前节点字符匹配 word[idx]？匹配就标记 visited，递归到 word[idx+1] 试所有未访问邻居。
+- 注意 backtrack：递归返回时把 visited 标记<strong>移除</strong>。</p>
+<p><strong>枚举所有起点</strong>：因为图里多个节点可能字符 = word[0]，每个都要试。</p>
+<p><strong>复杂度</strong>：每个节点作为起点 → O(V · branching^|word|)。比 grid 版分支更大（grid 是 4，graph 可能更高）。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 数据结构（先和面试官敲定签名）</strong>
+- <code>nodes: dict[node_id] -&gt; char</code>：每个节点的字符。
+- <code>edges: dict[node_id] -&gt; list[node_id]</code>：邻接表。
+- 是有向还是无向？要问。</p>
+<p><strong>Step 2 · 边界</strong>
+- 空 word：return True（"空串总能拼出来"约定，但要确认）。
+- 空 graph：return False。</p>
+<p><strong>Step 3 · DFS 函数签名</strong>
+- <code>dfs(node, idx)</code>：从 node 出发，匹配 <code>word[idx]</code>。
+- 返回 True 表示能完成 <code>word[idx:]</code> 的匹配。</p>
+<p><strong>Step 4 · DFS 主体</strong>
+- 字符不匹配 → 立刻 False。
+- 到 word 末尾 (idx == len(word) - 1) → True。
+- 否则标记 visited，遍历邻居：
+  - 跳过已访问。
+  - 递归调用，任一返回 True 就 True。
+- 回溯：<strong>无论成功失败都 remove 当前节点 from visited</strong>（成功也要 remove，不然 visited 会污染下次起点）。</p>
+<p><strong>Step 5 · 枚举所有起点</strong>
+- <code>for node in nodes</code>：字符 = word[0] 的都试一次。
+- 第一个返回 True 就 True。</p>
+<p><strong>Step 6 · Backtrack 的对称性</strong>
+- 进 DFS 时 <code>add</code>，出 DFS 时 <code>remove</code>。
+- 三个分支（base case 返回、找到答案返回、遍历完返回）都要 remove。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · 框架</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">exist_in_graph</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">word</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+</code></pre></div>
+
+<p><strong>Step 3-4 · DFS + Backtrack</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">!=</span> <span class="n">word</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">nb</span> <span class="ow">in</span> <span class="n">edges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="n">nb</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">dfs</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>            <span class="c1"># 成功也要回溯</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">visited</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>                    <span class="c1"># 失败回溯</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div>
+
+<p><strong>Step 5 · 枚举起点</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">==</span> <span class="n">word</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">dfs</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">exist_in_graph</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;nodes: dict[node_id] -&gt; char</span>
 <span class="sd">       edges: dict[node_id] -&gt; list[node_id]&quot;&quot;&quot;</span>

@@ -16,7 +16,10 @@
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
     <li><a href="#关键观察">关键观察</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -89,8 +92,89 @@
 </ol>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这道题在考"切两刀"背后的滑动窗口本质</strong>。直觉上你会想"枚举所有切法 O(n²)"，但题目暗示 <code>at most 2 cuts</code> + <code>sliding window</code> — 这是关键提示。</p>
+<p><strong>为什么 2 刀够</strong>：
+- 若存在一刀切：前缀有 n/2 个 D 和 n/2 个 R 时，1 刀就能平分。
+- 若一刀不行：用 2 刀切出<strong>中间一段长度恰好 n/2</strong> 且内部 D=n/4、R=n/4，剩下两段拼给另一人。这等价于"找一个长度 n/2 的窗口，D 数恰好 = n/4"。</p>
+<p><strong>算法两段</strong>：
+1. 一刀扫描：前缀和找平分点 → O(n)。
+2. 两刀滑窗：固定窗口长 n/2，找 D 数 = 总 D / 2 的窗口 → O(n)。</p>
+<p><strong>复杂度</strong>：时间 O(n)，空间 O(1)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 算总量 + 必要的合法性检查</strong>
+- 做什么：<code>total_d = s.count('D')</code>，<code>total_r = n - total_d</code>。
+- 为什么：后面 1 刀 / 2 刀都要用到 "每人各拿 total_d/2 个 D"。
+- 边界：<code>total_d != total_r</code> 时无解（题目保证不会，但 defensive）。
+- 设 <code>half_d = total_d // 2</code>，<code>half_r = total_r // 2</code>。</p>
+<p><strong>Step 2 · 尝试一刀切</strong>
+- 做什么：扫描前缀，找一个位置 i 让 <code>prefix_d == half_d</code> 且 <code>prefix_r == half_r</code>。
+- 为什么：一刀切左边给 A、右边给 B，两边各拿一半。
+- 实现：维护 <code>cd, cr</code> 边扫边累加，到目标值就返回 <code>[i+1]</code>（切在 i 和 i+1 之间）。
+- 注意：只到 <code>i = n-2</code>（最后一位前），否则切完一边是空。</p>
+<p><strong>Step 3 · 一刀不行 → 两刀切</strong>
+- 关键转化：两刀分出 3 段，A 拿头尾两段、B 拿中间一段（或反之）。
+- 为了让 B 拿到一半 D 和一半 R，<strong>中间段长度必须是 n/2</strong>（因为 A 拿剩下的 n/2，两边总 D 必须各 = half_d）。
+- 所以问题变成：<strong>长度 n/2 的子串里 D 数 = half_d 吗？</strong></p>
+<p><strong>Step 4 · 固定窗口滑动</strong>
+- 做什么：窗口长度 <code>w = n/2</code>，从位置 0 滑到 n-w。
+- 初始化：先算 <code>s[0:w]</code> 内的 D 数。
+- 滑动：每右移一格，加入 <code>s[i]</code>、移除 <code>s[i-w]</code> 的贡献。
+- 命中条件：<code>window_d == half_d</code> → 返回 <code>[i-w+1, i+1]</code> 两个切点。</p>
+<p><strong>Step 5 · Edge cases</strong>
+- <code>n</code> 是奇数 → 两刀也分不出 n/2，直接 return None。
+- 全 D 或全 R → total 不平衡，Step 1 就拦掉。
+- n = 2 → 一刀切中间。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 总量 + 合法性</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">split_necklace</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">total_d</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="n">total_r</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">total_d</span>
+    <span class="k">if</span> <span class="n">total_d</span> <span class="o">!=</span> <span class="n">total_r</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">half_d</span><span class="p">,</span> <span class="n">half_r</span> <span class="o">=</span> <span class="n">total_d</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">total_r</span> <span class="o">//</span> <span class="mi">2</span>
+</code></pre></div>
+
+<p><strong>Step 2 · 尝试一刀</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="n">cd</span> <span class="o">=</span> <span class="n">cr</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span>
+            <span class="n">cd</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cr</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cd</span> <span class="o">==</span> <span class="n">half_d</span> <span class="ow">and</span> <span class="n">cr</span> <span class="o">==</span> <span class="n">half_r</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>              <span class="c1"># 一刀就解决</span>
+</code></pre></div>
+
+<p><strong>Step 3-4 · 长度 n/2 的滑动窗口</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>                     <span class="c1"># 奇数无法 2 刀均分</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="c1"># 初始化第一个窗口</span>
+    <span class="n">cd</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">[:</span><span class="n">w</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cd</span> <span class="o">==</span> <span class="n">half_d</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span>
+
+    <span class="c1"># 滑动</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">cd</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">w</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cd</span> <span class="o">==</span> <span class="n">half_d</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">w</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">split_necklace</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
     <span class="n">total_d</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>

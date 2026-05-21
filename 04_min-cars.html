@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -80,8 +83,79 @@
 </ul>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这道题 = LC 253 Meeting Rooms II + 多记一份 assignment</strong>。</p>
+<p><strong>两种典型解法</strong>：
+- <strong>扫描线</strong>：把 <code>(pickup, +1)</code> 和 <code>(return, -1)</code> 排序遍历，累加得"任意时刻同时占用车数"的最大值。简单但<strong>没法分配到具体车</strong>。
+- <strong>min-heap</strong>：按 pickup 排序请求，堆里维护"已有车的下次空闲时间"。新请求来时看堆顶最早的车是否空了，空了就<strong>复用</strong>，不空就<strong>新开</strong>。<strong>能记录 assignment</strong>。</p>
+<p><strong>这题考点是后者</strong> — 因为题目明确要把请求分配到 <code>Car.rental_record</code>。</p>
+<p><strong>贪心正确性</strong>：每来新请求，复用"最早空闲且 ≤ 当前 pickup"的车一定不亏 — 因为新车也只能服务这个请求，复用相当于省了一辆。</p>
+<p><strong>复杂度</strong>：O(n log n)，排序 + 堆操作。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 设计 Car 数据结构</strong>
+- 字段：<code>id</code>（唯一标识）、<code>rental_record</code>（list of <code>(pickup, return)</code>）。
+- 这就是题目原话给的接口，照抄。</p>
+<p><strong>Step 2 · 排序所有请求</strong>
+- 按 <code>pickup_time</code> 升序排。
+- 为什么：保证我们按时间推进，堆里"已有车"的状态总是基于"过去"。</p>
+<p><strong>Step 3 · 用 min-heap 维护可复用的车</strong>
+- 堆元素：<code>(next_available_time, car_id, car_ref)</code>。
+- <code>next_available_time</code> 是这辆车上次的 return 时间。
+- 为什么加 <code>car_id</code> 作 tiebreaker：Python 的 heapq 比较元组时，相等就比下一项，<strong>Car 对象不支持比较会抛 TypeError</strong>。</p>
+<p><strong>Step 4 · 主循环：复用 or 新开</strong>
+- 取下一个请求 <code>(pickup, ret)</code>。
+- 检查堆顶 <code>pool[0][0] &lt;= pickup</code>：
+  - 是 → pop 出来，复用这辆车。
+  - 否 → 新建 Car，加入车队。
+- 把这次租用记录到 <code>car.rental_record</code>。
+- 把车以新的 <code>ret</code> 时间 push 回堆。</p>
+<p><strong>Step 5 · 返回结果</strong>
+- 返回 <code>(总车数, cars 列表)</code>，其中每辆 car.rental_record 里都有完整的分配记录。</p>
+<p><strong>Step 6 · Follow-up 提示（口头讨论即可）</strong>
+- 还车时间 vs 取车时间是否能相等？必须先问（决定 <code>&lt;=</code> 还是 <code>&lt;</code>）。
+- 分片日志（shard across servers）：可以提中央汇聚 + 时间排序，或时间窗分桶 + map-reduce。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · Car 类</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="k">class</span> <span class="nc">Car</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">car_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">car_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rental_record</span> <span class="o">=</span> <span class="p">[]</span>
+</code></pre></div>
+
+<p><strong>Step 2-5 · 主算法</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">min_cars</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>           <span class="c1"># Step 2: 按 pickup 排序</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="p">[]</span>                                    <span class="c1"># min-heap: (return_time, car_id, Car)</span>
+    <span class="n">cars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">next_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">pickup</span><span class="p">,</span> <span class="n">ret</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">:</span>
+        <span class="c1"># Step 4: 复用 or 新开</span>
+        <span class="k">if</span> <span class="n">pool</span> <span class="ow">and</span> <span class="n">pool</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">pickup</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">car</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>      <span class="c1"># 复用最早空闲的车</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">car</span> <span class="o">=</span> <span class="n">Car</span><span class="p">(</span><span class="n">next_id</span><span class="p">)</span>
+            <span class="n">cars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">car</span><span class="p">)</span>
+            <span class="n">next_id</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">car</span><span class="o">.</span><span class="n">rental_record</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pickup</span><span class="p">,</span> <span class="n">ret</span><span class="p">))</span> <span class="c1"># 记录分配</span>
+        <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">car</span><span class="p">))</span> <span class="c1"># 重新入堆</span>
+
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">cars</span><span class="p">),</span> <span class="n">cars</span>                       <span class="c1"># Step 5</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
 
 

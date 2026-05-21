@@ -16,7 +16,10 @@
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
     <li><a href="#方法对比要主动讲">方法对比（要主动讲）</a></li>
-    <li><a href="#python-实现随机-pivot-quick-select">Python 实现（随机 pivot Quick Select）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现随机-pivot-quick-select">Python 完整实现（随机 pivot Quick Select）</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -127,8 +130,104 @@
 </table>
 </section>
 
-<section id="python-实现随机-pivot-quick-select">
-<h2>Python 实现（随机 pivot Quick Select）</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>Quick Select = Quick Sort 的"找单点"版本</strong>：不需要完全排序，只需要找到第 k 大（或小）的位置。</p>
+<p><strong>核心思想</strong>：选一个 pivot，把数组<strong>划分</strong>成 <code>&lt;pivot | =pivot | &gt;pivot</code> 三段。看 k 落在哪一段：
+- 落在 <code>&gt;pivot</code> 段：递归到右半。
+- 落在 <code>&lt;pivot</code> 段：递归到左半。
+- 落在 <code>=pivot</code> 段：pivot 就是答案。</p>
+<p><strong>为什么 O(n) 期望</strong>：每次期望减半，T(n) = T(n/2) + O(n) → O(n)。</p>
+<p><strong>Pivot 选择决定生死</strong>：
+- 第一个 / 最后一个 → 已排序输入 → O(n²)。
+- <strong>随机 pivot</strong> → 期望 O(n)。<strong>工程默认选这个</strong>。
+- Median of medians → 最坏 O(n)，但常数大，面试一般不写。</p>
+<p><strong>关键技巧 — 三路划分（处理重复元素）</strong>：
+- Lomuto / Hoare partition 遇到大量重复时会退化。
+- 三路 (Dutch National Flag) 把相等的元素聚到中间，跳过它们再递归。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 索引转换</strong>
+- 题目要 "第 k 大" → 转成 "第 (n-k) 小"，方便用统一的 <code>target</code> 索引。
+- 不污染输入：<code>nums = nums[:]</code>（拷贝），不然多次调用结果不一致。</p>
+<p><strong>Step 2 · 写 select(lo, hi) 递归框架</strong>
+- 终止：<code>lo == hi</code>，直接返回 <code>nums[lo]</code>。
+- 选 pivot：随机选 <code>nums[randint(lo, hi)]</code>。
+- 三路划分。
+- 看 target 落哪段，递归对应区间。</p>
+<p><strong>Step 3 · 三路划分（Dutch National Flag）</strong>
+- 维护三个指针 <code>lt, i, gt</code>：
+  - <code>lo .. lt-1</code>：&lt; pivot。
+  - <code>lt .. i-1</code>：== pivot。
+  - <code>gt+1 .. hi</code>：&gt; pivot。
+  - <code>i .. gt</code>：未处理。
+- 主循环 <code>while i &lt;= gt</code>：
+  - <code>nums[i] &lt; pivot</code> → 与 lt 位置交换，<code>lt += 1; i += 1</code>。
+  - <code>nums[i] &gt; pivot</code> → 与 gt 位置交换，<code>gt -= 1</code>（注意 i 不动，因为换过来的元素未处理）。
+  - <code>nums[i] == pivot</code> → <code>i += 1</code>。</p>
+<p><strong>Step 4 · 决定下一步递归区间</strong>
+- 划分后：
+  - <code>[lo, lt-1]</code> 全 &lt; pivot。
+  - <code>[lt, gt]</code> 全 = pivot。
+  - <code>[gt+1, hi]</code> 全 &gt; pivot。
+- 根据 target 在哪段：
+  - <code>target &lt; lt</code> → 递归 <code>[lo, lt-1]</code>。
+  - <code>target &gt; gt</code> → 递归 <code>[gt+1, hi]</code>。
+  - 否则 → 返回 pivot。</p>
+<p><strong>Step 5 · Edge cases</strong>
+- 单元素数组：递归底层处理。
+- 全相等数组：三路划分大段并段，一次解决。
+- k 越界：assert 或在外面处理。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 入口</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">def</span> <span class="nf">quick_select_kth_largest</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">nums</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[:]</span>                              <span class="c1"># 不污染输入</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">-</span> <span class="n">k</span>                      <span class="c1"># 第 k 大 = 第 (n-k) 小</span>
+</code></pre></div>
+
+<p><strong>Step 2 · 递归框架</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">lo</span> <span class="o">==</span> <span class="n">hi</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">nums</span><span class="p">[</span><span class="n">lo</span><span class="p">]</span>
+        <span class="n">pivot_idx</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+        <span class="n">pivot</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">pivot_idx</span><span class="p">]</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 三路划分</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="n">lt</span><span class="p">,</span> <span class="n">gt</span> <span class="o">=</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">lo</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">gt</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">pivot</span><span class="p">:</span>
+                <span class="n">nums</span><span class="p">[</span><span class="n">lt</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">lt</span><span class="p">]</span>
+                <span class="n">lt</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">pivot</span><span class="p">:</span>
+                <span class="n">nums</span><span class="p">[</span><span class="n">gt</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">gt</span><span class="p">]</span>
+                <span class="n">gt</span> <span class="o">-=</span> <span class="mi">1</span>                          <span class="c1"># i 不动!</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+</code></pre></div>
+
+<p><strong>Step 4 · 根据 target 递归</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">if</span> <span class="n">target</span> <span class="o">&lt;</span> <span class="n">lt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">lt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">target</span> <span class="o">&gt;</span> <span class="n">gt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="n">gt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pivot</span>                         <span class="c1"># 落在等于段</span>
+    <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现随机-pivot-quick-select">
+<h2>Python 完整实现（随机 pivot Quick Select）</h2>
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">random</span>
 
 

@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现栈迭代解析">Python 实现（栈，迭代解析）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现栈迭代解析">Python 完整实现（栈，迭代解析）</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑这题挂了一个-candidate注意学习">常见坑（这题挂了一个 candidate，注意学习）</a></li>
   </ul>
@@ -80,8 +83,115 @@
 </ul>
 </section>
 
-<section id="python-实现栈迭代解析">
-<h2>Python 实现（栈，迭代解析）</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>输入是嵌套函数调用，本质是表达式树</strong>。两种解析路线：
+1. <strong>递归下降</strong>：写 <code>parse_expr()</code> 函数，调用自身处理嵌套。
+2. <strong>栈迭代</strong>：用 stack 维护"未完成的函数调用 frame"，碰到 <code>)</code> 就 pop frame 求值。</p>
+<p><strong>这题原帖被拒主因是 "minor syntax / out of bound"</strong>。所以<strong>写慢、写干净、dry run</strong>比写出最聪明的算法重要。</p>
+<p><strong>Token 类型</strong>：
+- 字母：函数名（<code>add</code> / <code>sub</code>）
+- <code>(</code>：开始一个调用
+- 数字（可能多位 + 负号）
+- <code>,</code>：参数分隔
+- <code>)</code>：结束当前调用，求值</p>
+<p><strong>栈帧设计</strong>：<code>(op_name, [已收集参数列表])</code>。每个 <code>(</code> 入栈一帧，每个 <code>)</code> pop 一帧、求值、把结果作为参数 append 到上一帧（如果有）或返回。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 预处理</strong>
+- 把空格清掉：<code>expr.replace(" ", "")</code>。
+- 这步能避免后续 token 解析时被空格干扰。</p>
+<p><strong>Step 2 · 主循环 + 索引推进</strong>
+- 不用 split，用单指针 <code>i</code> 扫描。
+- 用 <code>while i &lt; len(expr)</code> 控制，每个分支自己负责正确推进 <code>i</code>。</p>
+<p><strong>Step 3 · 读函数名</strong>
+- 当 <code>expr[i]</code> 是字母时：
+  - 扫描连续字母得到 op_name。
+  - 期望下一个字符是 <code>(</code>，跳过。
+  - 把 <code>(op_name, [])</code> push 到栈。</p>
+<p><strong>Step 4 · 读数字（处理多位和负号）</strong>
+- 当 <code>expr[i]</code> 是数字，或是 <code>-</code> 且前一个字符是 <code>(</code> 或 <code>,</code>（说明是负数）：
+  - 扫描连续数字得到完整数字字符串。
+  - 转 int，append 到当前栈顶帧的参数列表。</p>
+<p><strong>Step 5 · 处理 <code>,</code></strong>
+- 直接跳过：<code>i += 1</code>。</p>
+<p><strong>Step 6 · 处理 <code>)</code> — 求值！</strong>
+- pop 栈顶 frame <code>(op_name, args)</code>。
+- 根据 op_name 求值：
+  - <code>add</code>: sum(args)
+  - <code>sub</code>: args[0] - sum(args[1:])
+- 如果栈非空：把结果 append 到新栈顶的参数。
+- 如果栈空：这是最外层，return 结果。</p>
+<p><strong>Step 7 · 边界 + 防御</strong>
+- 数字读取要判 <code>j &lt; len(expr)</code>，否则容易 out-of-bound。
+- 负号判断要小心：单独的 <code>-</code> 在数字位置才算负号，不是减法（这题没有中缀减法）。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · 框架</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>                                <span class="c1"># frames: (op_name, [args])</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 函数名</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ch</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+                <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">op_name</span> <span class="o">=</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span>   <span class="c1"># 期望紧接 (</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">op_name</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+</code></pre></div>
+
+<p><strong>Step 4 · 数字（含负号）</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">if</span> <span class="n">ch</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+                            <span class="ow">and</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;(,&#39;</span><span class="p">)):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]))</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
+            <span class="k">continue</span>
+</code></pre></div>
+
+<p><strong>Step 5 · <code>,</code></strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">if</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;,&#39;</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+</code></pre></div>
+
+<p><strong>Step 6 · <code>)</code> 求值</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">if</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;)&#39;</span><span class="p">:</span>
+            <span class="n">op_name</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">op_name</span> <span class="o">==</span> <span class="s1">&#39;add&#39;</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">op_name</span> <span class="o">==</span> <span class="s1">&#39;sub&#39;</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown op: </span><span class="si">{</span><span class="n">op_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stack</span><span class="p">:</span>
+                <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">val</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Malformed expression&quot;</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现栈迭代解析">
+<h2>Python 完整实现（栈，迭代解析）</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
     <span class="n">expr</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># 待处理的&quot;操作 + 已收集的参数&quot;</span>

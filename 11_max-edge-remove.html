@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现预处理法-final-solution-from-面经">Python 实现（预处理法 — Final Solution from 面经）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现预处理法-final-solution-from-面经">Python 完整实现（预处理法 — Final Solution from 面经）</a></li>
     <li><a href="#o1-per-query-版本">O(1) per query 版本</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
@@ -81,8 +84,85 @@
 </ul>
 </section>
 
-<section id="python-实现预处理法-final-solution-from-面经">
-<h2>Python 实现（预处理法 — Final Solution from 面经）</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>面经的强烈推荐路径：brute force → 优化 → 最优</strong>。这道题的演进过程比答案本身更重要。</p>
+<p><strong>4 种思路（从笨到聪明）</strong>：
+1. <strong>Brute force</strong>：每次查询都遍历所有边，跳过连 v 的，求 max。每次 O(E)，多查询 O(Q·E)。
+2. <strong>Max-heap</strong>：边按权重入堆，pop 直到顶不连 v；但 pop 出来的下次查询还要还原，难。
+3. <strong>排序边一次</strong>：所有边按权重<strong>降序</strong>排好；每次查询从前往后扫，第一条不连 v 的就是答案。
+4. <strong>预处理</strong>：对<strong>每个节点</strong>预计算"删它之后的最大边"，存到字典；查询 O(1)。</p>
+<p><strong>关键洞察</strong>：边按权重降序后，"删 v 后的最大边" = 第一条不接触 v 的边。</p>
+<p><strong>适用场景</strong>：
+- 单次查询 → 思路 3 足够。
+- 多次重复查询 → 思路 4 预处理。
+- 大量节点查询不同 → 思路 4 的 O(V·E) 预处理 vs O(Q·E) 在线，看哪个划算。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 数据结构选择</strong>
+- <code>edges = [(u, v, w), ...]</code>：边列表。
+- 一次性 <code>sorted(edges, key=lambda e: -e[2])</code>：按权重降序。</p>
+<p><strong>Step 2 · 思路 3 — 排序后扫描</strong>
+- 排好序后，对每次查询 <code>query(node)</code>：
+  - 从前往后扫边，找第一条 <code>u != node and v != node</code> 的。
+  - 返回它的权重；扫不到返回 -1。
+- 复杂度：单次 O(E)，总 O(Q·E)。</p>
+<p><strong>Step 3 · 思路 4 — 预处理到 O(1) query</strong>
+- 遍历所有节点 set，对每个节点跑一次思路 3。
+- 把答案缓存到 <code>self.ans[node]</code>。
+- 复杂度：build O(V·E)，query O(1)。
+- 空间：O(V) 缓存。</p>
+<p><strong>Step 4 · 进一步优化（如果面试官追问）</strong>
+- 思路 4 的 build 可以优化：我们只关心前 <code>max_degree + 1</code> 条边即可（因为任何节点最多 "屏蔽" <code>degree</code> 条边，第 <code>degree+1</code> 条边必然能用）。
+- 复杂度降到 build O(E + V·min(E, max_degree+1))。</p>
+<p><strong>Step 5 · Edge cases</strong>
+- 节点不存在 → 退化到"返回全图最大边"。
+- 节点孤立无边 → 不影响其他边的存在，答案就是全图最大边。
+- 多重边：可能有，但不影响算法 — 边按独立条目处理。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · 思路 3：排序 + 扫描</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="k">class</span> <span class="nc">GraphQuery</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_edges</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="o">-</span><span class="n">e</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># 一次降序</span>
+
+    <span class="k">def</span> <span class="nf">max_weight_after_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_edges</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">u</span> <span class="o">!=</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">node</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">w</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 思路 4：预处理到 O(1)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">GraphQueryFast</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">edges</span><span class="p">):</span>
+        <span class="n">sorted_edges</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="o">-</span><span class="n">e</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ans</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ans</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">sorted_edges</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">u</span> <span class="o">!=</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">node</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ans</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>
+                    <span class="k">break</span>
+
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ans</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现预处理法-final-solution-from-面经">
+<h2>Python 完整实现（预处理法 — Final Solution from 面经）</h2>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 
 

@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题这题超-open澄清是核心">澄清问题（这题超 open，澄清是核心！）</a></li>
-    <li><a href="#python-实现单梯-scan-算法">Python 实现（单梯 SCAN 算法）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解必须先-clarify">🪜 思路拆解（必须先 clarify！）</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现单梯-scan-算法">Python 完整实现（单梯 SCAN 算法）</a></li>
     <li><a href="#讲解策略这题-l6-评论说过于-open">讲解策略（这题 L6 评论说&quot;过于 open&quot;）</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -95,8 +98,170 @@
 </ul>
 </section>
 
-<section id="python-实现单梯-scan-算法">
-<h2>Python 实现（单梯 SCAN 算法）</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>L6 这题原帖说"题目过于 open，clarify 时间长"</strong>。<strong>正确做法是把 clarify 当成主菜，不是开胃菜</strong>。</p>
+<p><strong>经典电梯调度算法叫 SCAN / LOOK</strong>：
+- 电梯保持一个方向（UP / DOWN / IDLE）。
+- UP 时一直向上停所有需要上行的楼层，到顶（或没人）后掉头 DOWN。
+- 类似硬盘磁头扫描算法。</p>
+<p><strong>多梯调度的核心</strong>：dispatch 时算每辆梯的"成本"，选最小的。成本包括距离 + 方向匹配 + 当前负载。</p>
+<p><strong>两个评估指标</strong>（先和面试官敲定）：
+- <strong>公平 (fairness)</strong>：FCFS 严格按时间顺序服务。等待方差小，但平均等待时间长。
+- <strong>效率 (efficiency)</strong>：SCAN / LOOK 顺路服务。平均等待短，但可能有人长时间等待（饿死）。</p>
+<p><strong>OOP 拆 3 层</strong>：
+- <code>Request</code>：纯数据。
+- <code>Elevator</code>：单梯状态机。
+- <code>ElevatorBank</code>：多梯调度器。</p>
+</section>
+
+<section id="思路拆解必须先-clarify">
+<h2>🪜 思路拆解（必须先 clarify！）</h2>
+<p><strong>Step 0 · 疯狂 clarify</strong>（至少 4-5 个问题）
+- 几台电梯？容量？
+- 楼层数？
+- 请求格式：一次性 (源, 目)，还是两步（呼叫 + 进梯后按目的层）？
+- 优化目标：平均等待 / 最大等待 / 吞吐？
+- 在线还是离线？预先知道所有请求 vs 流式来。
+- 时间模型：每层多少秒？开门多少秒？</p>
+<p><strong>Step 1 · 定义 Direction Enum</strong>
+- UP=1, DOWN=-1, IDLE=0。
+- 用数字便于楼层加减。</p>
+<p><strong>Step 2 · 定义 Request</strong>
+- 三个字段：<code>time, source, target</code>。</p>
+<p><strong>Step 3 · 单梯 Elevator 类的状态</strong>
+- <code>id, cur_floor, direction, up_stops (set), down_stops (set), passengers (list)</code>。
+- 把待停楼层分上行 / 下行两个 set — 让 SCAN 算法逻辑清楚。</p>
+<p><strong>Step 4 · Elevator 的 API</strong>
+- <code>add_request(req)</code>：根据 source 相对 cur_floor 的位置分到 up_stops 或 down_stops。
+- <code>step()</code>：走一格 — 处理当前层 + 决定下一步方向。
+- <code>_handle_floor()</code>：到达某层时开门 / 接客 / 出客。</p>
+<p><strong>Step 5 · SCAN 方向决策</strong>
+- 当前 UP：
+  - up_stops 还有更高的 → 继续上。
+  - 否则 down_stops 有 → 转 DOWN。
+  - 都没 → IDLE。
+- 当前 DOWN：对称。
+- 当前 IDLE：看哪边有 stops 就走那边。</p>
+<p><strong>Step 6 · 多梯 ElevatorBank</strong>
+- <code>dispatch(req)</code>：算每辆梯的成本，选最低。
+- 成本函数（<strong>面试时主动讲清楚为什么这么算</strong>）：
+  - 距离 <code>|car.floor - req.source|</code> 是基础。
+  - 方向相符加分（如电梯正在 UP 且 req 也是 UP，直接顺路）。
+  - 反向大幅惩罚。
+  - 高 load 时减分。
+- <code>step_all()</code>：每个 tick 让所有电梯走一格。</p>
+<p><strong>Step 7 · 持续 dry run</strong>
+- 例子：3 个请求 + 2 辆梯，走 5 个 tick，把每辆梯的 (floor, direction, up_stops, down_stops) 表格画出来。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · 枚举 + Request</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="k">class</span> <span class="nc">Direction</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">UP</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">DOWN</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">IDLE</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">class</span> <span class="nc">Request</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+</code></pre></div>
+
+<p><strong>Step 3 · Elevator 状态</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Elevator</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eid</span><span class="p">,</span> <span class="n">num_floors</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">eid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">IDLE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passengers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_floors</span> <span class="o">=</span> <span class="n">num_floors</span>
+</code></pre></div>
+
+<p><strong>Step 4 · add_request + step 框架</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">add_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">source</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">req</span><span class="o">.</span><span class="n">source</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_board</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_board</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passengers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">target</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 5 · SCAN 方向决策</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_floor</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">UP</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span> <span class="ow">and</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">DOWN</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">IDLE</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">DOWN</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span> <span class="ow">and</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">UP</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">IDLE</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># IDLE</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">UP</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">DOWN</span>
+
+    <span class="k">def</span> <span class="nf">_handle_floor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">UP</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">up_stops</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">DOWN</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">down_stops</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_floor</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 6 · ElevatorBank 调度</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">ElevatorBank</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_cars</span><span class="p">,</span> <span class="n">num_floors</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cars</span> <span class="o">=</span> <span class="p">[</span><span class="n">Elevator</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">num_floors</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_cars</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cars</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cost</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">req</span><span class="p">))</span>
+        <span class="n">best</span><span class="o">.</span><span class="n">add_request</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">best</span><span class="o">.</span><span class="n">id</span>
+
+    <span class="k">def</span> <span class="nf">_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">car</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">car</span><span class="o">.</span><span class="n">cur_floor</span> <span class="o">-</span> <span class="n">req</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="c1"># 顺路 = 同向 + req 在前方</span>
+        <span class="k">if</span> <span class="n">car</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">UP</span>   <span class="ow">and</span> <span class="n">req</span><span class="o">.</span><span class="n">source</span> <span class="o">&gt;=</span> <span class="n">car</span><span class="o">.</span><span class="n">cur_floor</span> <span class="ow">and</span> <span class="n">req</span><span class="o">.</span><span class="n">target</span> <span class="o">&gt;</span> <span class="n">req</span><span class="o">.</span><span class="n">source</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span>
+        <span class="k">if</span> <span class="n">car</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">DOWN</span> <span class="ow">and</span> <span class="n">req</span><span class="o">.</span><span class="n">source</span> <span class="o">&lt;=</span> <span class="n">car</span><span class="o">.</span><span class="n">cur_floor</span> <span class="ow">and</span> <span class="n">req</span><span class="o">.</span><span class="n">target</span> <span class="o">&lt;</span> <span class="n">req</span><span class="o">.</span><span class="n">source</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span>
+        <span class="k">if</span> <span class="n">car</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span>
+        <span class="k">return</span> <span class="n">d</span> <span class="o">+</span> <span class="mi">100</span>                        <span class="c1"># 反向重罚</span>
+
+    <span class="k">def</span> <span class="nf">step_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">car</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cars</span><span class="p">:</span>
+            <span class="n">car</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现单梯-scan-算法">
+<h2>Python 完整实现（单梯 SCAN 算法）</h2>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 

@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#可能题型与思路">可能题型与思路</a></li>
     <li><a href="#通用澄清问题">通用澄清问题</a></li>
-    <li><a href="#python-实现text-editor-lc-2296-风格">Python 实现：Text Editor (LC 2296 风格)</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现text-editor-lc-2296-风格">Python 完整实现：Text Editor (LC 2296 风格)</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -82,8 +85,96 @@
 </ul>
 </section>
 
-<section id="python-实现text-editor-lc-2296-风格">
-<h2>Python 实现：Text Editor (LC 2296 风格)</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这是 OOP 设计题，先 clarify 再写代码</strong>。题型常见三种（先问面试官）：
+1. Text Editor (LC 2296)：<code>addText / deleteText / cursorLeft / cursorRight</code>。
+2. In-Memory File System (LC 588)：<code>ls / mkdir / addContentToFile</code>。
+3. Book Keeping (借阅系统)：借/还/查询。</p>
+<p><strong>最高频的 Text Editor 用 "两个栈" 模型</strong>：</p>
+<div class="codehilite"><pre><span></span><code>left_stack:  [a b c d]    | cursor |    right_stack: [h g f e]
+                                                       ↑ top
+</code></pre></div>
+
+<ul>
+<li>光标左侧的字符存在 <code>left</code> 里（栈顶 = 光标前一个）。</li>
+<li>光标右侧的字符<strong>倒序</strong>存在 <code>right</code> 里（栈顶 = 光标后一个）。</li>
+<li>所有操作都是 push/pop，<strong>摊还 O(1)</strong>。</li>
+</ul>
+<p><strong>为什么不用数组</strong>：插入/删除中间字符是 O(n)，整个 IDE 卡得不行。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · clarify 阶段（必须做）</strong>
+- 支持哪些 API？是否大小写敏感？多用户？要持久化吗？
+- 期望复杂度？（"现实文本编辑器" 暗示 amortized O(1)）
+- 这一步面经里特别表扬：clarifications 是 Hire 的关键。</p>
+<p><strong>Step 2 · 设计内部状态</strong>
+- <code>left</code>：栈，存光标左边的字符。<code>left[-1]</code> 是光标紧贴左侧的字符。
+- <code>right</code>：栈，存光标右边的字符（<strong>倒序</strong>，栈顶 = 光标紧贴右侧）。
+- 字符串就是 <code>"".join(left) + "".join(reversed(right))</code>。</p>
+<p><strong>Step 3 · addText(text)</strong>
+- 做什么：在光标处插入 text。
+- 实现：把 text 的字符<strong>依次</strong>追加到 <code>left</code>（push）。
+- 复杂度：O(len(text))。</p>
+<p><strong>Step 4 · deleteText(k)</strong>
+- 做什么：删光标左边 k 个字符。
+- 实现：从 <code>left</code> 末尾 pop k 个（不够就全 pop）。
+- 返回值：实际删除的数量。</p>
+<p><strong>Step 5 · cursorLeft(k)</strong>
+- 做什么：光标向左移 k 步。
+- 实现：从 <code>left</code> pop 一个 char → push 到 <code>right</code>。重复 k 次或到边界。
+- 返回值：题目要求返回光标左侧最后 10 个字符（<code>"".join(left[-10:])</code>）。</p>
+<p><strong>Step 6 · cursorRight(k)</strong>
+- 做什么：光标向右移 k 步。
+- 实现：从 <code>right</code> pop → push 到 <code>left</code>。
+- 返回值：同 cursorLeft。</p>
+<p><strong>Step 7 · 持续 dry run</strong>
+- 每写完一个 API，举一个具体例子走一遍（比如 <code>addText("hello") → cursorLeft(3) → deleteText(1) → cursorRight(5)</code>）。
+- Google 面经特别强调 "continuous dry runs"。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 2 · 初始化</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TextEditor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="p">[]</span>     <span class="c1"># 光标左侧字符 (栈顶 = 最靠近光标)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="p">[]</span>    <span class="c1"># 光标右侧字符, 倒序存放</span>
+</code></pre></div>
+
+<p><strong>Step 3 · addText</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">addText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 4 · deleteText</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">deleteText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">))</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span> <span class="k">if</span> <span class="n">k</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">k</span>
+</code></pre></div>
+
+<p><strong>Step 5 · cursorLeft</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">cursorLeft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>   <span class="c1"># 左 -&gt; 右</span>
+            <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:])</span>
+</code></pre></div>
+
+<p><strong>Step 6 · cursorRight</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">cursorRight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>   <span class="c1"># 右 -&gt; 左</span>
+            <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:])</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现text-editor-lc-2296-风格">
+<h2>Python 完整实现：Text Editor (LC 2296 风格)</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TextEditor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;O(1) amortized for all ops using two stacks split at cursor.&quot;&quot;&quot;</span>
 

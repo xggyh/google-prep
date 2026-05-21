@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -80,8 +83,72 @@
 </ul>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这道题表面是文件系统操作，本质是 DFS 后序遍历</strong>。</p>
+<p><strong>关键 invariant</strong>：必须<strong>先删孩子，再删自己</strong>（post-order）。否则：
+- 先删父：孩子还在系统里，下次再调 <code>getChildrenPaths(父)</code> 拿不到了，孩子就泄漏。
+- 后删父：孩子已经删干净，删父是安全的最后一步。</p>
+<p><strong>两种实现</strong>：
+- <strong>递归</strong>：代码 5 行，简洁；但深目录（&gt;1000 层）会爆栈。
+- <strong>迭代 + 栈 + 标记</strong>：代码长一点，每个节点记录"是否已处理子节点"。</p>
+<p><strong>面经强调</strong>：这题被反复追问 trade-off — 递归 vs 迭代、API 失败处理、并发修改。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 区分文件和目录（先问面试官）</strong>
+- 最自然的语义：<code>getChildrenPaths(path)</code> 返回空 list = 这是文件。
+- 也可能：单独有 <code>isDirectory(path)</code> API。
+- 这个 clarification 是必须的，不然假设错全错。</p>
+<p><strong>Step 2 · 递归版本</strong>
+- 取出 children。
+- 如果是空（叶子/文件）：直接 <code>deleteFile(path)</code> 后返回。
+- 否则：对每个 child 递归调 <code>deleteDirectory(child)</code>。
+- 子节点都删完后，删自己 <code>deleteFile(path)</code>。</p>
+<p><strong>Step 3 · 迭代版本的核心难点</strong>
+- 普通栈做不到 "先访问孩子再处理自己"（DFS 默认是 pre-order）。
+- 技巧：每个节点入栈<strong>两次</strong> — 第一次带"未处理"标记，pop 出来把孩子入栈，再把自己以"已处理"重新入栈；第二次 pop 出来时执行 deleteFile。</p>
+<p><strong>Step 4 · 边界 / 失败处理（口头讨论加分）</strong>
+- <code>deleteFile</code> 抛异常：retry？跳过？冒泡？要主动问。
+- 并发：删除途中其他进程加文件 — 需要锁，或"标记删除 + 异步 GC"。
+- API 是同步的吗？异步要 await。
+- 删根本身还是只删根的内容？语义不同。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 2 · 递归版</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deleteDirectory</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">children</span> <span class="o">=</span> <span class="n">getChildrenPaths</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">children</span><span class="p">:</span>                    <span class="c1"># 文件或空目录</span>
+        <span class="n">deleteFile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>               <span class="c1"># 先递归删孩子</span>
+        <span class="n">deleteDirectory</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="n">deleteFile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>                     <span class="c1"># 再删自己</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 迭代版（后序遍历）</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deleteDirectory_iter</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">path</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>              <span class="c1"># (节点, 是否已展开)</span>
+    <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+        <span class="n">cur</span><span class="p">,</span> <span class="n">processed</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">processed</span><span class="p">:</span>
+            <span class="n">deleteFile</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>              <span class="c1"># 第二次出栈: 真正删除</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cur</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>    <span class="c1"># 把自己以&quot;已展开&quot;重新入栈</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">getChildrenPaths</span><span class="p">(</span><span class="n">cur</span><span class="p">):</span>
+                <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">child</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>  <span class="c1"># 孩子待展开</span>
+</code></pre></div>
+
+<blockquote>
+<p>注意入栈顺序：先把"自己 + True"压进去，再压孩子。这样孩子先 pop 出来（被处理 / 展开），自己最后 pop 出来执行 deleteFile，达成后序。</p>
+</blockquote>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">deleteDirectory</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;假设：getChildrenPaths 返回空表示是文件。&quot;&quot;&quot;</span>
     <span class="n">children</span> <span class="o">=</span> <span class="n">getChildrenPaths</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>

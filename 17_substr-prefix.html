@@ -15,6 +15,9 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题面经原文">澄清问题（面经原文）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
     <li><a href="#q1-解法每次出现-target-贡献-n---end-1-个">Q1 解法：每次出现 target 贡献 `(n - end + 1)` 个</a></li>
     <li><a href="#q2-解法最早出现位置-最短子串就是-target-本身如果存在">Q2 解法：最早出现位置 → 最短子串就是 target 本身（如果存在）</a></li>
     <li><a href="#澄清这个歧义">澄清这个歧义！</a></li>
@@ -84,6 +87,87 @@
 <li><strong>EN</strong>: Is <code>len(s) &gt;= len(target)</code> guaranteed? / If <code>len(s) &lt; len(target)</code>, return 0, -1, null, or empty? / Are these case-sensitive? / What if <code>target</code> is empty?</li>
 <li><strong>中</strong>：保证 |s| &gt;= |target| 吗？如果 |s| &lt; |target|，输出什么（0 / -1 / null / 空）？大小写敏感吗？target 空字符串怎么办？</li>
 </ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>两段题，难点是 Q2 的歧义</strong>。</p>
+<p><strong>Q1（计数）</strong>：找 target 在 s 中所有的出现位置，每个出现贡献 <code>(n - i - m + 1)</code> 个 substring（i 是出现位置）— 这个 substring 可以是 <code>target</code> 本身，也可以包含 target 后面的若干字符。</p>
+<p><strong>Q2（最短包含 target）</strong>：<strong>先澄清歧义</strong>！"包含 target" 有两种解读：
+- <strong>连续子串</strong>：target 作为 substring → 答案就是 <code>len(target)</code>（trivial）。
+- <strong>字符集合</strong>：target 的所有字符（顺序无所谓）→ 这是 LC 76 Minimum Window Substring，滑动窗口。</p>
+<p><strong>这一步不澄清就写错算法</strong>。</p>
+<p><strong>找出现位置用 KMP</strong>：O(n+m)，比朴素 O(nm) 好；但面试 30 分钟内手写 KMP 容易出 bug，<strong>Python 的 <code>str.find</code> 配 while 循环也能 O(nm) 跑通</strong>，更保险。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 澄清 Q2 含义</strong>
+- 直接问面试官："包含 target 是指连续子串还是字符集合？"
+- 等回答再决定写哪个算法。</p>
+<p><strong>Step 2 · Q1 算法</strong>
+- 找所有 target 在 s 中的起点 <code>occ</code>。
+- 累加 <code>sum(n - i - m + 1 for i in occ)</code>。
+- 边界：<code>occ</code> 空 → 返回 0；<code>target</code> 空 → 所有非空子串数（罕见，先问）。</p>
+<p><strong>Step 3 · KMP 失败函数 + 主匹配</strong>
+- <code>lps[i]</code> = <code>target[:i+1]</code> 的最长 proper prefix that is also a suffix 的长度。
+- 主匹配：用 <code>lps</code> 跳过已知匹配前缀，O(n)。</p>
+<p><strong>Step 4 · Q2 (连续子串解读) 答案</strong>
+- target 存在 s 中 → 答案就是 <code>len(target)</code>。
+- 不存在 → 返回 -1 或 0。</p>
+<p><strong>Step 5 · Q2 (multiset 解读) 滑动窗口</strong>（LC 76 套路）
+- 窗口里 char count 满足 target 的需求时收缩，记录最短长度。
+- 这是另一题，本面经题大概率是连续子串解读。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 3 · KMP 找所有出现位置</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">find_all_occurrences</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="c1"># 构建 lps</span>
+    <span class="n">lps</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">lps</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">lps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="c1"># 主匹配</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">lps</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>              <span class="c1"># 记录起点</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">lps</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">res</span>
+</code></pre></div>
+
+<p><strong>Step 2 · Q1 计数主函数</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">count_substr_with_prefix</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">occ</span> <span class="o">=</span> <span class="n">find_all_occurrences</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">occ</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 4 · Q2 (连续子串解读)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">shortest_containing</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">occ</span> <span class="o">=</span> <span class="n">find_all_occurrences</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="k">if</span> <span class="n">occ</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+</code></pre></div>
 </section>
 
 <section id="q1-解法每次出现-target-贡献-n---end-1-个">

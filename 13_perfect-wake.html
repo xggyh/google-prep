@@ -15,8 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#检验单个数字-简单题">检验单个数字 — 简单题</a></li>
-    <li><a href="#follow-up1n-内-pwn-计数数位-dp">Follow-up：1~n 内 PWN 计数（数位 DP）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -86,8 +88,59 @@ Examples: <code>196, 23, 12463</code> are valid. <code>1546</code> is not (4 has
 </ul>
 </section>
 
-<section id="检验单个数字-简单题">
-<h2>检验单个数字 — 简单题</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这题两段</strong>：判定单个数（送分）+ 1~n 计数（hard，数位 DP）。<strong>重点是后者</strong>。</p>
+<p><strong>Part A：判定 — 三条规则直接撸</strong>
+- 不含 0
+- 各位不重复
+- 中间位不能是"严格谷"（比左右都小）</p>
+<p><strong>Part B：数位 DP</strong>
+- <strong>为什么数位 DP</strong>：n 可能很大（10¹⁸），不能逐个枚举。
+- <strong>核心思想</strong>：按位从高到低构造数字，每位的选择受三个约束：
+  - <strong>不超过 n</strong>（tight 约束）
+  - <strong>不重复</strong>（用 bitmask 跟踪已用数字）
+  - <strong>不形成 valley</strong>（要看前两位 <code>prev_prev</code> 和 <code>prev</code>）</p>
+<p><strong>状态设计</strong>：<code>dp(pos, prev, prev_prev, used_mask, is_tight, started)</code>
+- <code>pos</code>：当前位
+- <code>prev, prev_prev</code>：前两位的数字（-1 表示未开始）
+- <code>used_mask</code>：10-bit 表示已用数字
+- <code>is_tight</code>：当前是否仍受 n 的约束（决定上界）
+- <code>started</code>：是否已选出第一位非零数字（处理前导零）</p>
+<p><strong>复杂度</strong>：状态数 ≈ L × 10 × 10 × 1024 × 2 × 2 ≈ 800K，可接受。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · Part A — 判定函数</strong>
+- 三条规则按顺序检查，任一失败 return False。
+- 检查 valley：<code>s[i] &lt; s[i-1] and s[i] &lt; s[i+1]</code>（i 是中间位）。</p>
+<p><strong>Step 2 · Part B — 数位 DP 框架</strong>
+- 把 n 拆成数字数组 <code>digits</code>。
+- 写 <code>dp(pos, ...)</code>：递归 + lru_cache。</p>
+<p><strong>Step 3 · 处理"未开始"状态</strong>
+- 前面位都没填（leading zero 的情况）：<code>started = False</code>，<code>prev = prev_prev = -1</code>。
+- 决定第一位时：从 1 选起（题目不含 0）。</p>
+<p><strong>Step 4 · 决定当前位 d</strong>
+- 上界 = <code>digits[pos] if is_tight else 9</code>。
+- 遍历 d 从 1 到上界（注意不含 0）。
+- 跳过 <code>used_mask &amp; (1 &lt;&lt; d)</code>（已用）。
+- 跳过会形成 valley 的：<strong>新加 d 之后</strong>，会让 <code>prev</code> 变成谷 — 即 <code>prev &lt; prev_prev and prev &lt; d</code>。</p>
+<p><strong>Step 5 · 递归调用</strong>
+- <code>new_tight = is_tight and (d == digits[pos])</code>：填的是上界才继续 tight。
+- <code>new_mask = used_mask | (1 &lt;&lt; d)</code>。
+- 新的 <code>(prev, prev_prev)</code> 变成 <code>(d, prev)</code>。</p>
+<p><strong>Step 6 · 终止条件</strong>
+- <code>pos == L</code>：到末尾了，<code>started</code> 为 True 才算一个有效数字。</p>
+<p><strong>Step 7 · 起点调用 + 注意事项</strong>
+- 主调用：<code>dp(0, -1, -1, 0, True, False)</code>。
+- <code>lru_cache</code> 在不同 n 之间要清理。
+- 注意 <code>is_tight</code> 和 <code>started</code> 影响状态数，全考虑进 cache key。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · Part A（送分题）</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">is_perfect_wake</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;0&#39;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
@@ -99,17 +152,62 @@ Examples: <code>196, 23, 12463</code> are valid. <code>1546</code> is not (4 has
             <span class="k">return</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="kc">True</span>
 </code></pre></div>
-</section>
 
-<section id="follow-up1n-内-pwn-计数数位-dp">
-<h2>Follow-up：1~n 内 PWN 计数（数位 DP）</h2>
+<p><strong>Step 2 · Part B 框架 — 准备数位 + lru_cache</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">count_perfect_wake</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
     <span class="n">digits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
     <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span>
-    <span class="c1"># state: (pos, prev_digit, prev_prev_digit, used_mask, is_tight, started)</span>
-    <span class="c1"># prev_digit = -1 表示还没开始</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+</code></pre></div>
+
+<p><strong>Step 6 · DP 函数签名 + 终止</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">dp</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">prev_prev</span><span class="p">,</span> <span class="n">used_mask</span><span class="p">,</span> <span class="n">is_tight</span><span class="p">,</span> <span class="n">started</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="n">L</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">started</span> <span class="k">else</span> <span class="mi">0</span>       <span class="c1"># 走到末尾, 算不算一个合法数</span>
+        <span class="n">upper</span> <span class="o">=</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_tight</span> <span class="k">else</span> <span class="mi">9</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 处理"未开始"分支（leading zero）</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span><span class="p">:</span>
+            <span class="c1"># 这一位也填 0 (即继续 leading)</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">dp</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">is_tight</span> <span class="ow">and</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">start_d</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start_d</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1"># 已开始, 但题目不含 0, 所以下面 max(1, ...)</span>
+</code></pre></div>
+
+<p><strong>Step 4 · 枚举当前位 d + valley 检查</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">start_d</span><span class="p">),</span> <span class="n">upper</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">used_mask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">):</span>
+                <span class="k">continue</span>                      <span class="c1"># 已用过, skip</span>
+            <span class="c1"># valley 检查: 上一位 prev 不能被 prev_prev 和 d 同时压住</span>
+            <span class="k">if</span> <span class="n">prev</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">prev_prev</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prev</span> <span class="o">&lt;</span> <span class="n">prev_prev</span> <span class="ow">and</span> <span class="n">prev</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">:</span>
+                    <span class="k">continue</span>
+</code></pre></div>
+
+<p><strong>Step 5 · 递归到下一位</strong></p>
+<div class="codehilite"><pre><span></span><code>            <span class="n">new_tight</span> <span class="o">=</span> <span class="n">is_tight</span> <span class="ow">and</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">dp</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">used_mask</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">),</span> <span class="n">new_tight</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total</span>
+</code></pre></div>
+
+<p><strong>Step 7 · 起点调用</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">return</span> <span class="n">dp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">count_perfect_wake</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">digits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span>
     <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
 
     <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -118,19 +216,17 @@ Examples: <code>196, 23, 12463</code> are valid. <code>1546</code> is not (4 has
             <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">started</span> <span class="k">else</span> <span class="mi">0</span>
         <span class="n">upper</span> <span class="o">=</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_tight</span> <span class="k">else</span> <span class="mi">9</span>
         <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># 选择不开始（依然 leading 0）</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span><span class="p">:</span>
             <span class="n">total</span> <span class="o">+=</span> <span class="n">dp</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">is_tight</span> <span class="ow">and</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="n">start_d</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">start_d</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># 但因为不含 0，所以下面统一从 1 开始</span>
+            <span class="n">start_d</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">start_d</span><span class="p">),</span> <span class="n">upper</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">used_mask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">):</span>
                 <span class="k">continue</span>
-            <span class="c1"># 检查 valley 规则：prev 不能比 prev_prev 和 d 都小</span>
             <span class="k">if</span> <span class="n">prev</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">prev_prev</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">prev</span> <span class="o">&lt;</span> <span class="n">prev_prev</span> <span class="ow">and</span> <span class="n">prev</span> <span class="o">&lt;</span> <span class="n">d</span><span class="p">:</span>
-                    <span class="k">continue</span>  <span class="c1"># 这一步如果选 d，会让 prev 变成 valley</span>
+                    <span class="k">continue</span>
             <span class="n">new_tight</span> <span class="o">=</span> <span class="n">is_tight</span> <span class="ow">and</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="n">digits</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span>
             <span class="n">total</span> <span class="o">+=</span> <span class="n">dp</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="n">used_mask</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">),</span> <span class="n">new_tight</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">total</span>

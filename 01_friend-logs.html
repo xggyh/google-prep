@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现主问题union-find">Python 实现（主问题：Union-Find）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解step-by-step">🪜 思路拆解（Step-by-Step）</a></li>
+    <li><a href="#逐步实现step-by-step-code">⌨️ 逐步实现（Step-by-Step Code）</a></li>
+    <li><a href="#python-完整实现主问题union-find">Python 完整实现（主问题：Union-Find）</a></li>
     <li><a href="#follow-up带-unfriend建图-bfs">Follow-up（带 unfriend）：建图 + BFS</a></li>
     <li><a href="#讲解策略拿-strong-hire">讲解策略（拿 Strong Hire）</a></li>
     <li><a href="#常见坑">常见坑</a></li>
@@ -82,8 +85,97 @@
 </ul>
 </section>
 
-<section id="python-实现主问题union-find">
-<h2>Python 实现（主问题：Union-Find）</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这道题在考三件事</strong>：
+1. <strong>抽象能力</strong>：能不能把"朋友圈"这个生活语言抽象成"图的连通分量"。
+2. <strong>数据结构选型</strong>：动态合并 + 快速查询"是否同组" = Union-Find (DSU)。
+3. <strong>何时停止</strong>：连通分量数 = 1 就是答案，不用等所有事件。</p>
+<p><strong>核心 insight</strong>：友谊只增不减 ⇒ 连通分量数单调递减。维护一个 <code>components</code> 计数器，每次成功合并就 <code>-= 1</code>，到 1 时立刻返回 <code>t</code>。</p>
+<p><strong>为什么不用 BFS</strong>：每次新加边后跑一次 BFS 检查全连通，单次 O(N+E)，总 O(E·(N+E))。Union-Find 把单次降到 O(α(N)) ≈ O(1)，总 O(E·α(N))。</p>
+<p><strong>复杂度目标</strong>：时间 O(E log E + E·α(N))（排序主导），空间 O(N)。</p>
+</section>
+
+<section id="思路拆解step-by-step">
+<h2>🪜 思路拆解（Step-by-Step）</h2>
+<p><strong>Step 1 · 排序事件</strong>
+- 做什么：把 <code>logs = [[t, a, b], ...]</code> 按 <code>t</code> 升序排。
+- 为什么：要找<strong>最早</strong>时间，必须按时间顺序处理。
+- 用什么：<code>logs.sort(key=lambda x: x[0])</code>。
+- 注意：先问面试官 "logs 是否已排序"，没排序你来排。</p>
+<p><strong>Step 2 · 设计 Union-Find 的状态</strong>
+- 做什么：维护三个字段。
+  - <code>parent[i]</code>：节点 i 的父节点（初始指向自己）。
+  - <code>rank[i]</code>：以 i 为根的树的近似高度（初始 0），用于按秩合并。
+  - <code>components</code>：当前连通分量数（初始 n），核心计数器。
+- 为什么 rank：让矮树挂到高树下，避免树退化成链表。
+- 为什么 components：O(1) 判断"是否全连通"，比每次跑 BFS 快太多。</p>
+<p><strong>Step 3 · 实现 find(x) — 找根 + 路径压缩</strong>
+- 做什么：沿着 <code>parent</code> 链向上爬，直到找到根（<code>parent[x] == x</code>）。
+- 为什么压缩：不压缩会退化到 O(n)；压缩后均摊 ≈ O(1)。
+- 压缩技巧：用 path halving — 每次把 <code>parent[x]</code> 重新指向 <code>parent[parent[x]]</code>（爷爷）。
+- <strong>推荐迭代</strong>：避免递归在大 N 时爆栈。</p>
+<p><strong>Step 4 · 实现 union(x, y) — 按 rank 合并</strong>
+- 做什么：把 x 和 y 所在的两棵树合并成一棵。
+- 关键判断：先看是不是同根，是就 <code>return False</code>（<strong>绝对不能漏！否则 components 计数会错</strong>）。
+- 怎么合并：让 rank 小的根挂到 rank 大的根下。
+- 副作用：合并成功 → <code>components -= 1</code>，<code>return True</code>。</p>
+<p><strong>Step 5 · 主循环 — 边处理边检查</strong>
+- 做什么：按时间顺序遍历每个 <code>(t, a, b)</code>，调 <code>union(a, b)</code>，再看 <code>components == 1</code>。
+- 为什么检查每次后：早停就是答案 — 一旦全连通，当前 <code>t</code> 就是最早时间。</p>
+<p><strong>Step 6 · 处理无解</strong>
+- 做什么：循环结束 <code>components</code> 还 &gt; 1，返回 -1。
+- 为什么：所有事件都用完了还没把所有人连起来。</p>
+</section>
+
+<section id="逐步实现step-by-step-code">
+<h2>⌨️ 逐步实现（Step-by-Step Code）</h2>
+<p><strong>Step 2 · 初始化 Union-Find 的状态</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionFind</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>   <span class="c1"># 每人初始独立: parent[i] = i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>            <span class="c1"># 树高度近似值</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="n">n</span>            <span class="c1"># 关键: 当前连通分量计数</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 找根 + 路径压缩</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># 迭代向上爬, 同时把 x 指向爷爷 (path halving)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]]</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div>
+
+<p><strong>Step 4 · 按 rank 合并</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">rx</span><span class="p">,</span> <span class="n">ry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rx</span> <span class="o">==</span> <span class="n">ry</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>                <span class="c1"># 同根, 不算一次合并</span>
+        <span class="c1"># 矮树挂高树下</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">rx</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">ry</span><span class="p">]:</span>
+            <span class="n">rx</span><span class="p">,</span> <span class="n">ry</span> <span class="o">=</span> <span class="n">ry</span><span class="p">,</span> <span class="n">rx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">ry</span><span class="p">]</span> <span class="o">=</span> <span class="n">rx</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">rx</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">ry</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">rx</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">-=</span> <span class="mi">1</span>            <span class="c1"># 关键: 计数 -1</span>
+        <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+
+<p><strong>Step 1 + 5 + 6 · 主函数</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">earliest_acquaintance</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">logs</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>       <span class="c1"># Step 1</span>
+    <span class="n">uf</span> <span class="o">=</span> <span class="n">UnionFind</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">logs</span><span class="p">:</span>                <span class="c1"># Step 5</span>
+        <span class="n">uf</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uf</span><span class="o">.</span><span class="n">components</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">t</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>                           <span class="c1"># Step 6</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现主问题union-find">
+<h2>Python 完整实现（主问题：Union-Find）</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionFind</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>

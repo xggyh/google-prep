@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -83,8 +86,117 @@ Return any valid placement, or report infeasibility.</p>
 </ul>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这是 N-Queens 的变体</strong>。要把 N 朵花放到 N×N 网格里，同时满足三个约束：
+1. 每行恰好一朵 F（N-Queens 标准约束）。
+2. 每列恰好一朵 F（N-Queens 标准约束）。
+3. 每个 H 上下左右恰好有一朵 F（<strong>这是这题特有</strong>，把它变成 hard）。</p>
+<p><strong>算法选 DFS + Backtrack</strong>：
+- 按行枚举，每行决定 F 放在哪一列。
+- 用 <code>cols_used</code> 记录列占用。
+- 每放一朵就检查"前面行的 H 是否已经违反约束"，违反就回溯。</p>
+<p><strong>关键 = 剪枝</strong>（面经评论里有人专门问剪枝）：
+- 列占用剪枝（标准）。
+- F 不能放 H 上（先问，但常规假设）。
+- <strong>早期约束传播</strong>：放完第 r 行后，对所有"已经能判定邻居"的 H 立即检查。
+  - 第 r-1 行的 H：上邻是 r-2 行（已定）、下邻是 r 行（刚放），可以最终判定。</p>
+<p><strong>复杂度</strong>：最坏 O(N!)，剪枝后 N ≤ 12 都可接受。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 状态设计</strong>
+- <code>result[r][c]</code>：当前网格状态（初始 = grid 副本）。
+- <code>cols_used[c]</code>：第 c 列是否已放 F。
+- 不需要 diag 数组（这题不是斜线约束，是 H 邻居约束）。</p>
+<p><strong>Step 2 · 写邻居数检查函数</strong>
+- <code>adjacent_count(r, c)</code>：返回 (r, c) 周围 4 个方向 F 的数量。
+- 用于检验 H 的约束。</p>
+<p><strong>Step 3 · 写 valid_after_placement(row)</strong>
+- 做什么：放完 row 行后，检查所有"已经可终结判定"的 H 是否满足约束。
+- 两层检查：
+  - 行 ≤ row 的 H：邻居数不能 &gt; 1（已经看到的邻居已经够 1，再多就违反"恰好 1"）。
+  - 行 &lt; row 的 H：邻居数必须 == 1（这些 H 的所有邻居都已决定，可以最终判定）。</p>
+<p><strong>Step 4 · DFS 主体</strong>
+- 递归签名 <code>dfs(row)</code>：从第 row 行开始放，返回 True/False。
+- 终止：<code>row == n</code> 时，再做一次"最后一行 H 的最终检查"，全过则成功。
+- 枚举：每个 (row, col)，跳过列已用、跳过 H 格子。
+- 放 F → 检查 → 递归 → 失败回溯。</p>
+<p><strong>Step 5 · 回溯三件套</strong>
+- 改 <code>result[row][col] = 'F'</code>、设 <code>cols_used[col] = True</code>、append <code>(row, col)</code>。
+- 失败回滚：恢复 <code>result[row][col] = grid[row][col]</code>、<code>cols_used[col] = False</code>、pop。
+- <strong>三件必须对称</strong>，少一个都会出 bug。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 初始化状态</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">place_flowers</span><span class="p">(</span><span class="n">grid</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+    <span class="n">cols_used</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[:]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">grid</span><span class="p">]</span>
+    <span class="n">placements</span> <span class="o">=</span> <span class="p">[]</span>
+</code></pre></div>
+
+<p><strong>Step 2 · 邻居数</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">adjacent_count</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+        <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">dr</span><span class="p">,</span> <span class="n">dc</span> <span class="ow">in</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]:</span>
+            <span class="n">nr</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">r</span> <span class="o">+</span> <span class="n">dr</span><span class="p">,</span> <span class="n">c</span> <span class="o">+</span> <span class="n">dc</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">nr</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">nc</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">result</span><span class="p">[</span><span class="n">nr</span><span class="p">][</span><span class="n">nc</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;F&#39;</span><span class="p">:</span>
+                <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">cnt</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 约束检查</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">valid_after_placement</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="c1"># row 及以上的 H 不能超过 1 个 F 邻居</span>
+        <span class="k">for</span> <span class="n">hr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">hc</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">grid</span><span class="p">[</span><span class="n">hr</span><span class="p">][</span><span class="n">hc</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span> <span class="ow">and</span> <span class="n">adjacent_count</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span> <span class="n">hc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+        <span class="c1"># &lt; row 的 H 必须恰好 1 个</span>
+        <span class="k">for</span> <span class="n">hr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">hc</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">grid</span><span class="p">[</span><span class="n">hr</span><span class="p">][</span><span class="n">hc</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span> <span class="ow">and</span> <span class="n">adjacent_count</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span> <span class="n">hc</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+
+<p><strong>Step 4-5 · DFS + 回溯</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">row</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+            <span class="c1"># 最后一行的 H 最终检查</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">grid</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span> <span class="ow">and</span> <span class="n">adjacent_count</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">cols_used</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="ow">or</span> <span class="n">grid</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>                              <span class="c1"># 剪枝</span>
+
+            <span class="c1"># 放 F</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;F&#39;</span>
+            <span class="n">cols_used</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">placements</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">valid_after_placement</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dfs</span><span class="p">(</span><span class="n">row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="c1"># 回溯</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">cols_used</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">placements</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="n">dfs</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">place_flowers</span><span class="p">(</span><span class="n">grid</span><span class="p">):</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
     <span class="n">cols_used</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>

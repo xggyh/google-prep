@@ -16,7 +16,10 @@
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
     <li><a href="#解法核心固定前两根递推剩下">解法核心：固定前两根，递推剩下</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
   </ul>
@@ -92,8 +95,92 @@
 <p><strong>枚举前两根的颜色组合</strong>，跑线性 DP，最后检查闭环。</p>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这题原帖说 GPT/Claude/Gemini 都没解出来 — 难点在"环形约束"</strong>。</p>
+<p><strong>先理解线性版（LC 276）</strong>：n 根栏杆排成一排，相邻 3 根不能同色。
+- 状态：<code>same[i]</code> = 前 i 根 + 第 i 根和第 i-1 根同色的方案数；<code>diff[i]</code> = 不同色。
+- 转移：
+  - <code>same[i] = diff[i-1]</code> （前一根必须不同色，否则连续 3 同色）
+  - <code>diff[i] = (same[i-1] + diff[i-1]) * (k-1)</code>
+- 总数 = <code>same[n] + diff[n]</code>。</p>
+<p><strong>环形版的处理通用技巧</strong>：
+- 枚举<strong>头两根的颜色组合</strong> <code>(c0, c1)</code>。
+- 跑线性 DP 算出末尾两根可能的状态。
+- 检查闭环约束：
+  - <code>(post[n-1], post[0], post[1])</code> 不能三同色。
+  - <code>(post[n-2], post[n-1], post[0])</code> 不能三同色。</p>
+<p><strong>复杂度</strong>：枚举 k² 起始 + 每次 n 步 DP × 每步 k³ 转移 = O(n·k⁵)，但 n 大、k 小（典型 k ≤ 10）时可接受。如果 n 极大用矩阵快速幂。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 处理 n ≤ 3 的特殊情况</strong>
+- n = 1：k 种方案。
+- n = 2：k² 种（任意两色）。
+- n = 3：k³ - k（总数减去全同色 k 种）。</p>
+<p><strong>Step 2 · 枚举头两根颜色</strong>
+- <code>for c0 in range(k): for c1 in range(k)</code>：覆盖所有起点。
+- 对每对 (c0, c1)，初始化 DP 状态。</p>
+<p><strong>Step 3 · DP 状态设计</strong>
+- 状态用 <code>(prev_prev, prev)</code> 表示"最近两根的颜色"。
+- <code>dp[(pp, p)]</code> = 以这两根结尾的方案数。
+- 初始：<code>dp[(c0, c1)] = 1</code>（恰好一种方法到这里）。</p>
+<p><strong>Step 4 · DP 转移</strong>
+- 在位置 i（从 2 到 n-1），下一根颜色 c：
+  - 跳过 <code>c == p == pp</code>（避免连续 3 同色）。
+  - <code>ndp[(p, c)] += dp[(pp, p)]</code>。</p>
+<p><strong>Step 5 · 闭环检查</strong>
+- DP 跑完后，<code>dp[(pp, p)]</code> 表示 post[n-2]=pp、post[n-1]=p 的方案数。
+- 加到 total 之前要过两道闸：
+  - <code>(pp, p, c0)</code> 不能全相等。
+  - <code>(p, c0, c1)</code> 不能全相等。</p>
+<p><strong>Step 6 · 加和</strong>
+- 把所有合法的 (c0, c1, pp, p) 组合的方案数累加。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 特殊情况</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">num_ways_circular</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">k</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span> <span class="o">-</span> <span class="n">k</span>
+</code></pre></div>
+
+<p><strong>Step 2-4 · 枚举头两根 + DP</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">c0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">dp</span> <span class="o">=</span> <span class="p">{(</span><span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">):</span> <span class="mi">1</span><span class="p">}</span>                       <span class="c1"># Step 3 初始</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>                    <span class="c1"># Step 4 转移</span>
+                <span class="n">ndp</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">cnt</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">p</span> <span class="o">==</span> <span class="n">pp</span><span class="p">:</span>             <span class="c1"># 避免 3 同色</span>
+                            <span class="k">continue</span>
+                        <span class="n">ndp</span><span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="n">ndp</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">cnt</span>
+                <span class="n">dp</span> <span class="o">=</span> <span class="n">ndp</span>
+</code></pre></div>
+
+<p><strong>Step 5-6 · 闭环检查 + 累加</strong></p>
+<div class="codehilite"><pre><span></span><code>            <span class="k">for</span> <span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">cnt</span> <span class="ow">in</span> <span class="n">dp</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">pp</span> <span class="o">==</span> <span class="n">p</span> <span class="o">==</span> <span class="n">c0</span><span class="p">:</span>                    <span class="c1"># 检查 (pp, p, c0)</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">c0</span> <span class="o">==</span> <span class="n">c1</span><span class="p">:</span>                    <span class="c1"># 检查 (p, c0, c1)</span>
+                    <span class="k">continue</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="n">cnt</span>
+    <span class="k">return</span> <span class="n">total</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">num_ways_circular</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>

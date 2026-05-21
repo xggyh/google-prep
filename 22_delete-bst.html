@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
     <li><a href="#从被拒-成功的帖子中提炼的高优先级注意点">从被拒 / 成功的帖子中提炼的高优先级注意点</a></li>
@@ -83,8 +86,85 @@
 </ul>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>BST 删点 = 找到节点 + 处理 3 种情况</strong>：</p>
+<ol>
+<li><strong>叶子节点</strong>：直接删，父指向 None。</li>
+<li><strong>只有一个子节点</strong>：用子节点替换自己（父指向自己的子）。</li>
+<li><strong>有两个子节点</strong>：用<strong>后继</strong>（右子树最小值）的值覆盖自己的值，然后递归删那个后继（它一定只有 0 或 1 个子节点，回到情况 1 或 2）。</li>
+</ol>
+<p><strong>为什么用后继</strong>：
+- 后继是右子树最左节点 — 比左子树所有值都大、比右子树其他值都小，正好接替"原节点"的位置，BST 性质保持。
+- 也可以用左子树最大值（前驱），效果对称。</p>
+<p><strong>递归实现的核心</strong>：每个递归 call 返回"删完后这个子树的新根"。父 call 用返回值更新自己的子指针。</p>
+<p><strong>复杂度</strong>：O(h)，平衡 BST 是 O(log n)，最坏（链表）O(n)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 边界</strong>
+- 空树 → return None。</p>
+<p><strong>Step 2 · 二分找到目标节点</strong>
+- <code>key &lt; root.val</code>：递归到左子树，<code>root.left = deleteNode(root.left, key)</code>。
+- <code>key &gt; root.val</code>：递归到右子树。
+- <code>key == root.val</code>：进入删除逻辑。</p>
+<p><strong>Step 3 · 删除逻辑 — 情况 1 &amp; 2</strong>
+- 没有左子树 → return <code>root.right</code>（包括都没有的叶子情况，return None 也对）。
+- 没有右子树 → return <code>root.left</code>。</p>
+<p><strong>Step 4 · 删除逻辑 — 情况 3（两个子）</strong>
+- 找右子树最左节点 = 后继。
+- 把后继的值复制到 <code>root.val</code>（不动指针）。
+- 递归 <code>deleteNode(root.right, succ.val)</code> 删后继。</p>
+<p><strong>Step 5 · 返回新根</strong>
+- 所有情况最后 return root（除了情况 1、2 直接 return 子节点）。</p>
+<p><strong>Step 6 · 易错点</strong>
+- 找后继：右子树<strong>最左</strong>节点，不是右子树最右。
+- 删后继别忘 — 复制完值后必须递归删后继的原位置，否则同一个值会出现两次。
+- 比较：<code>&lt;</code> 和 <code>&gt;</code> 之间是 <code>==</code>（不要漏）。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · 边界 + 二分查找</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">right</span>
+
+<span class="k">def</span> <span class="nf">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="o">&lt;</span> <span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">:</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">root</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="o">&gt;</span> <span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">:</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">root</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 情况 1 &amp; 2</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="c1"># key == root.val</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="n">right</span>                       <span class="c1"># 0 或 1 个子 (右)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="n">left</span>                        <span class="c1"># 1 个子 (左)</span>
+</code></pre></div>
+
+<p><strong>Step 4 · 情况 3 — 找后继 + 替换 + 递归删</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="c1"># 两个子: 找右子树最左节点 (后继)</span>
+    <span class="n">succ</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">right</span>
+    <span class="k">while</span> <span class="n">succ</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+        <span class="n">succ</span> <span class="o">=</span> <span class="n">succ</span><span class="o">.</span><span class="n">left</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">succ</span><span class="o">.</span><span class="n">val</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">deleteNode</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">succ</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">root</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>

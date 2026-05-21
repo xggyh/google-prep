@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现hashmap-法-简单">Python 实现（HashMap 法 — 简单）</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现hashmap-法-简单">Python 完整实现（HashMap 法 — 简单）</a></li>
     <li><a href="#trie-版本推荐讲">Trie 版本（推荐讲）</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
@@ -81,8 +84,112 @@
 </ul>
 </section>
 
-<section id="python-实现hashmap-法-简单">
-<h2>Python 实现（HashMap 法 — 简单）</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这题在考"贪心匹配 + 数据结构选型"</strong>。两种解法：</p>
+<ol>
+<li>
+<p><strong>HashMap + 倒序枚举长度</strong>：对每个位置 i，尝试从最长到最短的 token（<code>text[i:i+L]</code>）查 dict。<strong>简单但慢</strong>：O(N · L_max)。</p>
+</li>
+<li>
+<p><strong>Trie</strong>：构建一棵字典树。对每个位置 i，沿着 trie 一路走，记下沿路遇到的最深 match。<strong>快</strong>：O(N · avg_depth)，实际表现比 1 好很多。</p>
+</li>
+</ol>
+<p><strong>为什么 longest match 是合理的贪心</strong>：当 dict 没有歧义（每个 token 唯一对应一个 id），longest match 给出最少的 token 分割 — 通常也是用户期望的"语义最大块"。</p>
+<p><strong>Follow-up 切词优先级改变</strong>：例如改成 shortest match 或 frequency-based。两种实现都好改：HashMap 改循环顺序；Trie 在走到叶子时立刻 break。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 数据结构：Trie</strong>
+- 每个 TrieNode 有：<code>children</code> (dict: char → TrieNode)、<code>token_id</code>（如果该节点是某个 token 结尾）。
+- 构建：遍历 vocab，对每个 token 沿 trie 走/插入，叶子上记 id。</p>
+<p><strong>Step 2 · Trie 构建</strong>
+- 对每个 <code>(tok, tid)</code>：
+  - 从 root 出发，逐字符走 trie。
+  - 不存在的孩子就新建。
+  - 最后一个字符的节点上写 <code>token_id = tid</code>。</p>
+<p><strong>Step 3 · 主扫描</strong>
+- 维护 <code>i</code>（当前扫描位置）。
+- 对每个 i：从 root 出发尝试沿 trie 走。
+  - 维护 <code>last_match = (end_pos, token_id)</code>，记录沿路遇到的最深 match。
+  - 走不下去就停。
+- 处理结果：
+  - 有 match → emit <code>token_id</code>，<code>i = end_pos</code>。
+  - 无 match → emit <code>text[i]</code> 作为 literal，<code>i += 1</code>。</p>
+<p><strong>Step 4 · Edge cases 主动澄清</strong>
+- 空字典 / 空文本：直接返回空。
+- 大小写：必须问。
+- vocab 里有 key 是其他 key 的前缀（如 "ab" 和 "abc"）：trie 自然处理。
+- Follow-up：shortest match → 走 trie 时一遇 token_id 就 break。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · Trie 节点 + 构建</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TrieNode</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token_id</span> <span class="o">=</span> <span class="kc">None</span>              <span class="c1"># 非 None 表示是某 token 末尾</span>
+
+<span class="k">def</span> <span class="nf">build_trie</span><span class="p">(</span><span class="n">vocab</span><span class="p">):</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">TrieNode</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">tok</span><span class="p">,</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">vocab</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">tok</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">TrieNode</span><span class="p">())</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">token_id</span> <span class="o">=</span> <span class="n">tid</span>
+    <span class="k">return</span> <span class="n">root</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 主扫描 — Trie 版</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">tokenize_trie</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">vocab</span><span class="p">):</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">build_trie</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">last_match</span> <span class="o">=</span> <span class="kc">None</span>                  <span class="c1"># (end_pos, token_id)</span>
+        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">text</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">text</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">token_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">last_match</span> <span class="o">=</span> <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">token_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_match</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">last_match</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">last_match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>            <span class="c1"># 原样输出</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+
+<p><strong>朴素 HashMap 版（备用 / 易解释）</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">vocab</span><span class="p">):</span>
+    <span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">vocab</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">matched</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_len</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>  <span class="c1"># 从长到短</span>
+            <span class="n">tok</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">L</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">tok</span> <span class="ow">in</span> <span class="n">vocab</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vocab</span><span class="p">[</span><span class="n">tok</span><span class="p">])</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="n">L</span>
+                <span class="n">matched</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">matched</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现hashmap-法-简单">
+<h2>Python 完整实现（HashMap 法 — 简单）</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">vocab</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;vocab: dict[str, int]&quot;&quot;&quot;</span>
     <span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">vocab</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>

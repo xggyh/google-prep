@@ -15,7 +15,10 @@
     <li><a href="#题目概览">题目概览</a></li>
     <li><a href="#题目">题目</a></li>
     <li><a href="#澄清问题">澄清问题</a></li>
-    <li><a href="#python-实现">Python 实现</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
     <li><a href="#优化版堆">优化版（堆）</a></li>
     <li><a href="#讲解策略">讲解策略</a></li>
     <li><a href="#常见坑">常见坑</a></li>
@@ -86,8 +89,101 @@ Return for each person the actual time they enter/exit.</p>
 </ul>
 </section>
 
-<section id="python-实现">
-<h2>Python 实现</h2>
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>这题是模拟题，但 tie-breaking 规则多到容易写错</strong>。先把规则<strong>完整地写在纸上</strong>再动手。</p>
+<p><strong>模型</strong>：两个队列分别管"想进门的人"和"想出门的人"，按时间推进。每个时间单位<strong>最多一个人通过门</strong>。</p>
+<p><strong>4 条 tie 规则</strong>（必须全部覆盖）：
+1. 上一刻进 → 进优先
+2. 上一刻出 → 出优先
+3. 上一刻无人 → 出优先（默认）
+4. 同方向中 → 索引小的先</p>
+<p><strong>朴素 O(T)</strong> 是"时间一点点加"；<strong>优化 O(n log n)</strong> 是"跳到下一个有人的时刻"。</p>
+<p><strong>关键状态</strong>：<code>prev</code>（上一次通过门的方向：in / out / none）+ <code>cur_time</code>。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 输入分桶</strong>
+- 遍历 requests，按 action 把 <code>(timestamp, person_id)</code> 分到 <code>in_heap</code> 或 <code>out_heap</code>。
+- 用堆是因为后面要按 timestamp 升序 pop。</p>
+<p><strong>Step 2 · 主循环结构</strong>
+- 终止：两个堆都空。
+- 每轮：
+  - 找当前可处理的时间（max(cur_time, 两堆最早时间)）。
+  - 判断当前时刻哪些"在场" — 即 timestamp ≤ cur_time。
+  - 应用 4 条 tie 规则选一个方向。
+  - pop 出对应人，记录 <code>result[pid] = cur_time</code>。
+  - 更新 <code>prev</code> 和 <code>cur_time += 1</code>。</p>
+<p><strong>Step 3 · "在场" 判定</strong>
+- 用 <code>heap[0][0] &lt;= cur_time</code> 判断堆顶是否在场。
+- 注意 <code>cur_time</code> 是动态推进的。</p>
+<p><strong>Step 4 · 应用 tie 规则</strong>
+- 双方都在场：
+  - prev == "in" → 选 in 队（规则 1）。
+  - prev == "out" → 选 out 队（规则 2）。
+  - prev == "none" → 选 out 队（规则 3）。
+- 一方在场：选那一方。
+- 都不在场：跳到下一个有人的时刻。</p>
+<p><strong>Step 5 · 同方向多人 → 索引小的先</strong>
+- 堆的元素是 <code>(timestamp, person_id)</code>，相同 timestamp 时 Python 自动比 id，小的先 pop。<strong>所以堆的元组顺序很关键</strong>。</p>
+<p><strong>Step 6 · prev 初始化</strong>
+- 一开始没人通过 → <code>prev = "out"</code>（规则 3：默认出优先）或 <code>prev = "none"</code> 然后在判定里映射成 out。
+- 题目说"前一刻没人，出门优先"，所以等价于 prev = out。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 分桶到两个堆</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="k">def</span> <span class="nf">schedule_opt</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+    <span class="n">in_heap</span><span class="p">,</span> <span class="n">out_heap</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">requests</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span><span class="p">:</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">in_heap</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">out_heap</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+</code></pre></div>
+
+<p><strong>Step 2-3 · 主循环 + 在场判定</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;out&quot;</span>                        <span class="c1"># 初始按规则 3, 出优先</span>
+    <span class="n">cur_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">avail</span><span class="p">(</span><span class="n">heap</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">heap</span> <span class="ow">and</span> <span class="n">heap</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">cur_time</span>
+
+    <span class="k">while</span> <span class="n">in_heap</span> <span class="ow">or</span> <span class="n">out_heap</span><span class="p">:</span>
+        <span class="c1"># 都不在场, 跳到下一个有人的时刻</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">avail</span><span class="p">(</span><span class="n">in_heap</span><span class="p">)</span> <span class="ow">or</span> <span class="n">avail</span><span class="p">(</span><span class="n">out_heap</span><span class="p">)):</span>
+            <span class="n">cur_time</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="n">in_heap</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>  <span class="k">if</span> <span class="n">in_heap</span>  <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+                <span class="n">out_heap</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">out_heap</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+            <span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 4 · tie 规则选方向</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="k">if</span> <span class="n">avail</span><span class="p">(</span><span class="n">in_heap</span><span class="p">)</span> <span class="ow">and</span> <span class="n">avail</span><span class="p">(</span><span class="n">out_heap</span><span class="p">):</span>
+            <span class="n">chosen</span> <span class="o">=</span> <span class="n">in_heap</span> <span class="k">if</span> <span class="n">prev</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span> <span class="k">else</span> <span class="n">out_heap</span>
+        <span class="k">elif</span> <span class="n">avail</span><span class="p">(</span><span class="n">in_heap</span><span class="p">):</span>
+            <span class="n">chosen</span> <span class="o">=</span> <span class="n">in_heap</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chosen</span> <span class="o">=</span> <span class="n">out_heap</span>
+</code></pre></div>
+
+<p><strong>Step 5-6 · 执行 + 推进时间</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="n">_</span><span class="p">,</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">chosen</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur_time</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span> <span class="k">if</span> <span class="n">chosen</span> <span class="ow">is</span> <span class="n">in_heap</span> <span class="k">else</span> <span class="s2">&quot;out&quot;</span>
+        <span class="n">cur_time</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 
 
