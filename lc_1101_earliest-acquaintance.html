@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 1101. The Earliest Moment When Everyone Become Friends 彼此熟识的最早时间 · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_79_word-search.html">LC 79. Search 单词搜索</a></li>
+    <li><a href="lc_743_network-delay-time.html">LC 743. Delay Time 网络延迟时间</a></li>
+    <li><a href="lc_1101_earliest-acquaintance.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 1101. Earliest Moment When Everyone Become Friends 彼此熟识的最早时间</a></li>
+    <li><a href="lc_1197_knight-moves.html">LC 1197. Knight Moves 进击的骑士</a></li>
+    <li><a href="lc_1254_closed-islands.html">LC 1254. of Closed Islands 统计封闭岛屿的数目</a></li>
+    <li><a href="lc_1740_tree-distance.html">LC 1740. Distance in a Binary Tree 找出二叉树中的距离</a></li>
+    <li><a href="lc_1928_min-cost-time-limit.html">LC 1928. Cost to Reach Destination in Time 规定时间内到达终点的最小花费</a></li>
+    <li><a href="lc_2101_detonate-bombs.html">LC 2101. the Maximum Bombs 引爆最多的炸弹</a></li>
+    <li><a href="lc_2258_escape-fire.html">LC 2258. the Spreading Fire 逃离火灾</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 1101. The Earliest Moment When Everyone Become Friends 彼此熟识的最早时间</h1>
+  <p>类别：🗺️ 图 / BFS / DFS · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-high">⭐ Google 直接对应</span></p>
+  <div class="meta">
+    <span class="badge">🗺️ 图 / BFS / DFS</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-high">⭐ Google 直接对应</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：图 / Union-Find | <strong>难度</strong>：Medium | <strong>标记</strong>：⭐</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given <code>logs[i] = [timestamp, x, y]</code> representing a friendship event. Friendship is transitive. Return the earliest timestamp when all <code>n</code> people are in one friend group, or -1.</p>
+<p><strong>中文</strong>：日志数组 <code>[时间戳, x, y]</code> 表示 x 和 y 成为朋友（关系传递）。返回所有 n 人成为一个朋友圈的最早时间，找不到返回 -1。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Are logs sorted? / Symmetric friendship? / Can the same pair appear twice?</li>
+<li><strong>中</strong>：是否已排序？关系对称吗？同一对会出现多次吗？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>Union-Find 模板题</strong>：按时间排序事件，每次 union；维护连通分量计数，到 1 就返回。</p>
+<p><strong>关键 invariant</strong>：友谊单调（只增不减）→ DSU 完美适用。</p>
+<p><strong>复杂度</strong>：O(E log E + E·α(N))。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 按 timestamp 排序</strong>
+- 找最早时间必须按时间顺序处理。</p>
+<p><strong>Step 2 · UF 三件套：parent / rank / components</strong>
+- <code>parent[i] = i</code>，<code>rank[i] = 0</code>，<code>components = n</code>。</p>
+<p><strong>Step 3 · find with path compression</strong>
+- 沿 parent 爬到根；同时 path halving。</p>
+<p><strong>Step 4 · union by rank</strong>
+- 同根 → return False。
+- 矮树挂高树下；rank 相等时新根 rank+1。
+- 合并成功 → <code>components -= 1</code>。</p>
+<p><strong>Step 5 · 主循环 + 早停</strong>
+- union 后检查 <code>components == 1</code> → 返回 t。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 2 · UF 状态</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionFind</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="n">n</span>
+</code></pre></div>
+
+<p><strong>Step 3 · find + 路径压缩</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]]</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div>
+
+<p><strong>Step 4 · union by rank</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">rx</span><span class="p">,</span> <span class="n">ry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rx</span> <span class="o">==</span> <span class="n">ry</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">rx</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">ry</span><span class="p">]:</span>
+            <span class="n">rx</span><span class="p">,</span> <span class="n">ry</span> <span class="o">=</span> <span class="n">ry</span><span class="p">,</span> <span class="n">rx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="n">ry</span><span class="p">]</span> <span class="o">=</span> <span class="n">rx</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">rx</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">ry</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">[</span><span class="n">rx</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+
+<p><strong>Step 1 + 5 · 主函数</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">earliestAcq</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">logs</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">uf</span> <span class="o">=</span> <span class="n">UnionFind</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">logs</span><span class="p">:</span>
+        <span class="n">uf</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uf</span><span class="o">.</span><span class="n">components</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">t</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上面拼起来）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>抽象成"图连通分量"问题。</li>
+<li>选 DSU 而非 BFS（DSU O(α) vs BFS O(V+E) per check）。</li>
+<li>路径压缩 + 按秩合并，复杂度近似 O(1) per op。</li>
+<li>早停优化：components = 1 立即返回。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>logs 未排序</strong>：题目可能给已排序，但要先问。</li>
+<li><strong>union 同根没 return False</strong>：components 计数会出错。</li>
+<li><strong>递归 find 在大 N 爆栈</strong>：用迭代。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_743_network-delay-time.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 743. Delay Time 网络延迟时间</span></a>
+  <a href="lc_1197_knight-moves.html" class="next"><span class="label">下一题 →</span><span class="title">LC 1197. Knight Moves 进击的骑士</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

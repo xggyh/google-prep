@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 1928. Minimum Cost to Reach Destination in Time 规定时间内到达终点的最小花费 · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_79_word-search.html">LC 79. Search 单词搜索</a></li>
+    <li><a href="lc_743_network-delay-time.html">LC 743. Delay Time 网络延迟时间</a></li>
+    <li><a href="lc_1101_earliest-acquaintance.html">LC 1101. Earliest Moment When Everyone Become Friends 彼此熟识的最早时间</a></li>
+    <li><a href="lc_1197_knight-moves.html">LC 1197. Knight Moves 进击的骑士</a></li>
+    <li><a href="lc_1254_closed-islands.html">LC 1254. of Closed Islands 统计封闭岛屿的数目</a></li>
+    <li><a href="lc_1740_tree-distance.html">LC 1740. Distance in a Binary Tree 找出二叉树中的距离</a></li>
+    <li><a href="lc_1928_min-cost-time-limit.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 1928. Cost to Reach Destination in Time 规定时间内到达终点的最小花费</a></li>
+    <li><a href="lc_2101_detonate-bombs.html">LC 2101. the Maximum Bombs 引爆最多的炸弹</a></li>
+    <li><a href="lc_2258_escape-fire.html">LC 2258. the Spreading Fire 逃离火灾</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 1928. Minimum Cost to Reach Destination in Time 规定时间内到达终点的最小花费</h1>
+  <p>类别：🗺️ 图 / BFS / DFS · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-mid">🔄 LC 变体</span></p>
+  <div class="meta">
+    <span class="badge">🗺️ 图 / BFS / DFS</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-mid">🔄 LC 变体</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：图 / Dijkstra 变体 | <strong>难度</strong>：Hard | <strong>标记</strong>：🔄</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Graph with <code>n</code> cities. <code>edges[i] = (u, v, time)</code> is bidirectional. <code>passingFees[i]</code> is cost of passing through city i. Reach city n-1 from 0 within <code>maxTime</code>. Return min total fee.</p>
+<p><strong>中文</strong>：n 个城市，无向带时间边。每个城市有过路费。从 0 出发到 n-1，总时间 ≤ maxTime。求最小总过路费（含起点和终点）。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Multiple edges between same pair? / Always reachable within time?</li>
+<li><strong>中</strong>：同一对城市可能有多条不同时间的边吗？保证 maxTime 内可达吗？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>双维度 Dijkstra</strong>：传统 Dijkstra 优化"距离"；这里同时有<strong>时间</strong>和<strong>费用</strong>两个维度。</p>
+<p><strong>关键状态</strong>：<code>min_cost[city]</code> 不够 — 因为可能存在"费用高但时间短"的路径更有价值。但<strong>只要时间没超 maxTime</strong>，费用最小就是最优。</p>
+<p><strong>修改 Dijkstra</strong>：堆按 <code>(cost, time, city)</code> 排序，pop 出来的费用最小。维护 <code>min_time[city]</code> — 只松弛能减小时间的状态（费用已经是最小）。</p>
+<p><strong>为什么对</strong>：堆按 cost 出，所以第一个到达 n-1 的状态就是最小 cost。但同一个 city 可能多次 push（不同 time），所以用 min_time 剪枝。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 建图</strong>
+- 无向，每条边加两次。</p>
+<p><strong>Step 2 · 优先队列按 cost 排序</strong>
+- 元素 <code>(cost, time, city)</code>。
+- 起点：<code>(passingFees[0], 0, 0)</code>。</p>
+<p><strong>Step 3 · 维护每个城市的最短 time</strong>
+- <code>min_time[i]</code> 初始 inf；起点 0。</p>
+<p><strong>Step 4 · 主循环</strong>
+- pop <code>(cost, time, u)</code>。
+- u == n-1 → return cost（最先到的就是最小）。
+- 遍历邻居 (v, t)：
+  - <code>new_time = time + t</code>，超 maxTime 跳过。
+  - <code>new_cost = cost + passingFees[v]</code>。
+  - <code>new_time &lt; min_time[v]</code> 才 push（剪枝）。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · 建图 + 初始化</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="k">def</span> <span class="nf">minCost</span><span class="p">(</span><span class="n">maxTime</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">passingFees</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">passingFees</span><span class="p">)</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+        <span class="n">graph</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">v</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+        <span class="n">graph</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+    <span class="n">min_time</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">min_time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">pq</span> <span class="o">=</span> <span class="p">[(</span><span class="n">passingFees</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>              <span class="c1"># (cost, time, city)</span>
+</code></pre></div>
+
+<p><strong>Step 4 · Dijkstra 变体</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">while</span> <span class="n">pq</span><span class="p">:</span>
+        <span class="n">cost</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cost</span>
+        <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span>
+            <span class="n">new_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">+</span> <span class="n">t</span>
+            <span class="k">if</span> <span class="n">new_time</span> <span class="o">&gt;</span> <span class="n">maxTime</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">new_time</span> <span class="o">&lt;</span> <span class="n">min_time</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
+                <span class="n">min_time</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_time</span>
+                <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="p">(</span><span class="n">cost</span> <span class="o">+</span> <span class="n">passingFees</span><span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">new_time</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="k">def</span> <span class="nf">minCost</span><span class="p">(</span><span class="n">maxTime</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">passingFees</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">passingFees</span><span class="p">)</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+        <span class="n">graph</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">v</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+        <span class="n">graph</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+    <span class="n">min_time</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">min_time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">pq</span> <span class="o">=</span> <span class="p">[(</span><span class="n">passingFees</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+    <span class="k">while</span> <span class="n">pq</span><span class="p">:</span>
+        <span class="n">cost</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cost</span>
+        <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span>
+            <span class="n">new_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">+</span> <span class="n">t</span>
+            <span class="k">if</span> <span class="n">new_time</span> <span class="o">&gt;</span> <span class="n">maxTime</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">new_time</span> <span class="o">&lt;</span> <span class="n">min_time</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
+                <span class="n">min_time</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_time</span>
+                <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="p">(</span><span class="n">cost</span> <span class="o">+</span> <span class="n">passingFees</span><span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">new_time</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>关键洞察：堆按 cost 排序 → 第一次 pop 出终点就是答案。</li>
+<li>用 min_time 剪枝避免重复访问。</li>
+<li>复杂度 O(E log E)。</li>
+<li>提替代方案：DP <code>dp[t][i]</code> 在时间 t 到达 i 的最小费用，O(maxTime · E)。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>状态只用 cost 剪枝</strong>：会漏掉"cost 高但 time 短"的路径。</li>
+<li><strong>忘记加起点的 passingFees</strong>：题目要求总费用含起点。</li>
+<li><strong>重边</strong>：图保留所有边即可，Dijkstra 自动选最优。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_1740_tree-distance.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 1740. Distance in a Binary Tree 找出二叉树中的距离</span></a>
+  <a href="lc_2101_detonate-bombs.html" class="next"><span class="label">下一题 →</span><span class="title">LC 2101. the Maximum Bombs 引爆最多的炸弹</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

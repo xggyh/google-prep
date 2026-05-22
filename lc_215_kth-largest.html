@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 215. Kth Largest Element in an Array 数组中的第 K 个最大元素 · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解quickselect-版">🪜 思路拆解（Quickselect 版）</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#min-heap-版备用更易理解">Min-heap 版（备用，更易理解）</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_215_kth-largest.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 215. Largest Element in an Array 数组中的第 K 个最大元素</a></li>
+    <li><a href="lc_253_meeting-rooms-ii.html">LC 253. Rooms II 会议室 II</a></li>
+    <li><a href="lc_347_top-k-frequent.html">LC 347. K Frequent Elements 前 K 个高频元素</a></li>
+    <li><a href="lc_1167_connect-sticks.html">LC 1167. Cost to Connect Sticks 连接棒材的最低费用</a></li>
+    <li><a href="lc_1854_max-population.html">LC 1854. Population Year 人口最多的年份</a></li>
+    <li><a href="lc_2402_meeting-rooms-iii.html">LC 2402. Rooms III 会议室 III</a></li>
+    <li><a href="lc_2655_max-uncovered-ranges.html">LC 2655. Maximal Uncovered Ranges 寻找最大长度的未覆盖区间</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 215. Kth Largest Element in an Array 数组中的第 K 个最大元素</h1>
+  <p>类别：📚 堆 / 扫描线 · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-high">⭐ Google 直接对应</span></p>
+  <div class="meta">
+    <span class="badge">📚 堆 / 扫描线</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-high">⭐ Google 直接对应</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：堆 / Quickselect | <strong>难度</strong>：Medium | <strong>标记</strong>：⭐</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given an unsorted array <code>nums</code> and integer <code>k</code>, return the kth largest element. Solve without sorting.</p>
+<p><strong>中文</strong>：无序数组中找第 k 大元素，不能用排序。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: 1-indexed k? / Duplicates allowed? / Modify input ok? / Memory constraints?</li>
+<li><strong>中</strong>：k 是 1-indexed 吗？有重复吗？可以原地修改吗？有内存限制吗？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>两条路</strong>：
+1. <strong>Min-heap size k</strong>：O(n log k) 时间，O(k) 空间 — 流式数据友好。
+2. <strong>Quickselect 随机 pivot</strong>：O(n) 期望时间，O(log n) 栈 — 一次性数据更快。</p>
+<p><strong>Quickselect 关键</strong>：选 pivot → 三路划分 → 看 target 落哪段递归。</p>
+</section>
+
+<section id="思路拆解quickselect-版">
+<h2>🪜 思路拆解（Quickselect 版）</h2>
+<p><strong>Step 1 · 索引转换</strong>
+- 第 k 大 = 第 (n-k) 小（0-indexed <code>target</code>）。</p>
+<p><strong>Step 2 · 随机 pivot</strong>
+- <code>random.randint(lo, hi)</code> 选 pivot。
+- 已排序输入 → 第一个或最后一个 pivot 会退化。</p>
+<p><strong>Step 3 · 三路划分（Dutch flag）</strong>
+- 三段：<code>&lt; pivot | == pivot | &gt; pivot</code>。
+- 处理重复元素更高效。</p>
+<p><strong>Step 4 · 根据 target 递归</strong>
+- <code>target &lt; lt</code> → 左半。
+- <code>target &gt; gt</code> → 右半。
+- 否则 → 落在 == 段，返回 pivot。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 入口</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">def</span> <span class="nf">findKthLargest</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">nums</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[:]</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">-</span> <span class="n">k</span>
+</code></pre></div>
+
+<p><strong>Step 2-4 · Quickselect</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">lo</span> <span class="o">==</span> <span class="n">hi</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">nums</span><span class="p">[</span><span class="n">lo</span><span class="p">]</span>
+        <span class="n">pivot</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">)]</span>
+        <span class="n">lt</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">gt</span> <span class="o">=</span> <span class="n">lo</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">gt</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">pivot</span><span class="p">:</span>
+                <span class="n">nums</span><span class="p">[</span><span class="n">lt</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">lt</span><span class="p">]</span>
+                <span class="n">lt</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">pivot</span><span class="p">:</span>
+                <span class="n">nums</span><span class="p">[</span><span class="n">gt</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">gt</span><span class="p">]</span>
+                <span class="n">gt</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="o">&lt;</span> <span class="n">lt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">lt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">target</span> <span class="o">&gt;</span> <span class="n">gt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="n">gt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pivot</span>
+
+    <span class="k">return</span> <span class="n">select</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="min-heap-版备用更易理解">
+<h2>Min-heap 版（备用，更易理解）</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="k">def</span> <span class="nf">findKthLargest_heap</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">heap</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">:</span>
+        <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">heap</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">k</span><span class="p">:</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">heap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>                          <span class="c1"># 堆顶就是第 k 大</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（Quickselect 版见上面）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>列三种方法：sort / heap / quickselect — 主动给 trade-off。</li>
+<li>选 quickselect 期望最优。</li>
+<li>三路 partition 处理重复元素的好处。</li>
+<li>提 median-of-medians 最坏 O(n) 但常数大。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>固定 pivot</strong>：已排序输入 O(n²)。</li>
+<li><strong>Lomuto + 全相同数组</strong>：O(n²)。三路更稳。</li>
+<li><strong>递归终止 lo &gt; hi</strong>：边界判断要 <code>lo == hi</code> 返回。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_2258_escape-fire.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 2258. the Spreading Fire 逃离火灾</span></a>
+  <a href="lc_253_meeting-rooms-ii.html" class="next"><span class="label">下一题 →</span><span class="title">LC 253. Rooms II 会议室 II</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

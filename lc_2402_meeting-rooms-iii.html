@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 2402. Meeting Rooms III 会议室 III · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_215_kth-largest.html">LC 215. Largest Element in an Array 数组中的第 K 个最大元素</a></li>
+    <li><a href="lc_253_meeting-rooms-ii.html">LC 253. Rooms II 会议室 II</a></li>
+    <li><a href="lc_347_top-k-frequent.html">LC 347. K Frequent Elements 前 K 个高频元素</a></li>
+    <li><a href="lc_1167_connect-sticks.html">LC 1167. Cost to Connect Sticks 连接棒材的最低费用</a></li>
+    <li><a href="lc_1854_max-population.html">LC 1854. Population Year 人口最多的年份</a></li>
+    <li><a href="lc_2402_meeting-rooms-iii.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 2402. Rooms III 会议室 III</a></li>
+    <li><a href="lc_2655_max-uncovered-ranges.html">LC 2655. Maximal Uncovered Ranges 寻找最大长度的未覆盖区间</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 2402. Meeting Rooms III 会议室 III</h1>
+  <p>类别：📚 堆 / 扫描线 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-low">➕ 额外推荐</span></p>
+  <div class="meta">
+    <span class="badge">📚 堆 / 扫描线</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-low">➕ 额外推荐</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：堆 / 模拟 | <strong>难度</strong>：Hard | <strong>标记</strong>：➕</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: <code>n</code> meeting rooms numbered <code>0..n-1</code>. Meetings <code>meetings[i] = [start, end]</code>. Allocation rules:
+- Each meeting kept its original duration.
+- Earliest available room (smallest index) is used.
+- If all busy, delay meeting; meeting starts as soon as some room frees, keeping original duration.</p>
+<p>Return the room that held the most meetings (smallest index if tie).</p>
+<p><strong>中文</strong>：n 间会议室编号 0..n-1。每个会议保持原时长。优先用空闲房中编号最小的；都忙就等最早空的房间，保持原时长。返回开会次数最多的房间（同次取最小编号）。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: How to break ties when rooms free at the same time? / Can meetings overlap exactly at endpoints?</li>
+<li><strong>中</strong>：多个房间同时空闲怎么选？端点重合怎么处理？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>双堆</strong>：
+- <code>free_heap</code>：空闲房间，按 index 最小堆。
+- <code>busy_heap</code>：在用房间，按 (end_time, index) 最小堆。</p>
+<p><strong>核心循环</strong>：按会议 start 排序，依次处理：
+- 先把 busy_heap 里 end ≤ start 的房间还回 free_heap。
+- 若 free 非空：分配最小 index，更新计数 + 加到 busy。
+- 若 free 空：pop busy 最早结束的房间，meeting 的 end = old_end + duration。</p>
+<p><strong>复杂度</strong>：O(M log N + M log M)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 初始化两个堆 + 计数数组</strong>
+- <code>free_heap = list(range(n))</code> + heapify。
+- <code>busy_heap = []</code>。
+- <code>count = [0] * n</code>。</p>
+<p><strong>Step 2 · 排序会议</strong>
+- 按 start 升序。</p>
+<p><strong>Step 3 · 每个会议处理</strong>
+- 把 busy 里 end ≤ start 的还给 free。
+- 若 free 非空：分配最小 idx，count[idx]++，push 到 busy（end）。
+- 若 free 空：pop busy 最早的 (end, idx)，count[idx]++，新 end = end + duration，push 回 busy。</p>
+<p><strong>Step 4 · 选 count 最大的 index（tie 取小）</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="k">def</span> <span class="nf">mostBooked</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">meetings</span><span class="p">):</span>
+    <span class="n">meetings</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">free</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">heapq</span><span class="o">.</span><span class="n">heapify</span><span class="p">(</span><span class="n">free</span><span class="p">)</span>
+    <span class="n">busy</span> <span class="o">=</span> <span class="p">[]</span>                                    <span class="c1"># (end_time, room_idx)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+
+    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">meetings</span><span class="p">:</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="c1"># 把已经空出来的房间还给 free</span>
+        <span class="k">while</span> <span class="n">busy</span> <span class="ow">and</span> <span class="n">busy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">busy</span><span class="p">)</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">free</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">free</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">free</span><span class="p">)</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">busy</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">idx</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">old_end</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">busy</span><span class="p">)</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">busy</span><span class="p">,</span> <span class="p">(</span><span class="n">old_end</span> <span class="o">+</span> <span class="n">duration</span><span class="p">,</span> <span class="n">idx</span><span class="p">))</span>
+
+        <span class="n">count</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">count</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>               <span class="c1"># 第一个 max 即最小 idx</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>双堆建模清晰：free 按 index，busy 按 end。</li>
+<li>关键 idiom：每个新会议先"释放"早结束的房间。</li>
+<li>复杂度 O(M log N)。</li>
+<li>这是 LC 253 的进阶。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong><code>&lt;=</code> vs <code>&lt;</code></strong>：end == start 时房间是否可立即用，要问。</li>
+<li><strong>延迟会议的 end 计算</strong>：<code>old_end + duration</code>，不是 <code>old_end + (end - start)</code> 但等价。</li>
+<li><strong>tie</strong>：<code>count.index(max(count))</code> 自然返回第一个最大值的索引。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_1854_max-population.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 1854. Population Year 人口最多的年份</span></a>
+  <a href="lc_2655_max-uncovered-ranges.html" class="next"><span class="label">下一题 →</span><span class="title">LC 2655. Maximal Uncovered Ranges 寻找最大长度的未覆盖区间</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

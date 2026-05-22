@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 460. LFU Cache LFU 缓存 · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_460_lfu-cache.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 460. Cache LFU 缓存</a></li>
+    <li><a href="lc_588_file-system.html">LC 588. In-Memory File System 设计内存文件系统</a></li>
+    <li><a href="lc_642_autocomplete.html">LC 642. Search Autocomplete System 设计搜索自动补全系统</a></li>
+    <li><a href="lc_2296_text-editor.html">LC 2296. a Text Editor 设计文本编辑器</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 460. LFU Cache LFU 缓存</h1>
+  <p>类别：🏗️ OOP 设计 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-low">➕ 额外推荐</span></p>
+  <div class="meta">
+    <span class="badge">🏗️ OOP 设计</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-low">➕ 额外推荐</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：OOP 设计 / 双向链表 + HashMap | <strong>难度</strong>：Hard | <strong>标记</strong>：➕</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Design a Least Frequently Used (LFU) cache with capacity. Support <code>get</code> and <code>put</code> in O(1). Eviction: lowest frequency; tie → least recently used.</p>
+<p><strong>中文</strong>：设计 LFU 缓存，支持 O(1) 的 get / put。淘汰策略：频率最低；同频淘汰最久未用。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Capacity 0 case? / Update on get (frequency)? / Update on put (existing key)?</li>
+<li><strong>中</strong>：容量 0 怎么办？get 是否增加频率？put 已存在 key 怎么处理？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>3 个数据结构</strong>：
+1. <code>key_to_val</code>：key → value。
+2. <code>key_to_freq</code>：key → 当前频率。
+3. <code>freq_to_keys</code>：freq → OrderedDict（保持插入顺序，即"在该频率内的访问顺序"）。</p>
+<p><strong>额外维护 <code>min_freq</code></strong>：当前最小频率，淘汰时直接用。</p>
+<p><strong>get(key)</strong>：
+- 不存在 → -1。
+- 存在 → 把 key 从 <code>freq_to_keys[old_freq]</code> 移到 <code>freq_to_keys[old_freq+1]</code>；若 <code>old_freq</code> 桶空且 <code>old_freq == min_freq</code> → <code>min_freq += 1</code>。</p>
+<p><strong>put(key, val)</strong>：
+- 已存在 → 更新 val，同 get 流程。
+- 不存在：
+  - 若满 → 淘汰 <code>freq_to_keys[min_freq]</code> 第一个 key。
+  - 加入新 key，freq = 1，<code>min_freq = 1</code>。</p>
+<p><strong>复杂度</strong>：O(1) per op（OrderedDict 的 popitem 是 O(1)）。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 初始化</strong>
+- 4 个状态：key_to_val、key_to_freq、freq_to_keys (defaultdict(OrderedDict))、min_freq。</p>
+<p><strong>Step 2 · 私有方法 <code>_touch(key)</code></strong>
+- 把 key 在 freq_to_keys 里从 old_freq 移到 old_freq+1。
+- 更新 key_to_freq。
+- 若旧桶空且是 min_freq → min_freq++。</p>
+<p><strong>Step 3 · get</strong>
+- 不存在 → -1。
+- 存在 → _touch(key)，返回 val。</p>
+<p><strong>Step 4 · put</strong>
+- 容量 0 直接 return。
+- 已存在 → 更新 val 后 _touch。
+- 不存在：
+  - 若满 → 淘汰 <code>freq_to_keys[min_freq]</code> 的第一个。
+  - 插入新 key（freq=1，min_freq=1）。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">defaultdict</span>
+
+<span class="k">class</span> <span class="nc">LFUCache</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capacity</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="n">capacity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_to_val</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_to_freq</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>_touch 提升频率</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">_touch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_to_freq</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="n">f</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="n">f</span><span class="p">]:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="n">f</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_to_freq</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span> <span class="o">+</span> <span class="mi">1</span>
+</code></pre></div>
+
+<p><strong>get</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_to_val</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_touch</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_to_val</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</code></pre></div>
+
+<p><strong>put</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_to_val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">key_to_val</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_touch</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="p">:</span>
+            <span class="n">evict_key</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span><span class="p">]</span><span class="o">.</span><span class="n">popitem</span><span class="p">(</span><span class="n">last</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span><span class="p">]:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_to_val</span><span class="p">[</span><span class="n">evict_key</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_to_freq</span><span class="p">[</span><span class="n">evict_key</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_to_val</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_to_freq</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_to_keys</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+=</span> <span class="mi">1</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上面拼起来）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>3 个 hash 表 + min_freq 是核心。</li>
+<li>OrderedDict 保证 O(1) popitem(last=False)。</li>
+<li>_touch 抽出来避免 get/put 重复代码。</li>
+<li>复杂度 O(1) per op。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>容量 0</strong>：直接 return，不进任何状态。</li>
+<li><strong>min_freq 更新时机</strong>：旧桶空且是 min_freq 时才 +1。</li>
+<li><strong>put 已存在 key</strong>：要更新 val 并 _touch，不要当淘汰流程。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_450_delete-node-bst.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 450. Node in a BST 删除二叉搜索树中的节点</span></a>
+  <a href="lc_588_file-system.html" class="next"><span class="label">下一题 →</span><span class="title">LC 588. In-Memory File System 设计内存文件系统</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

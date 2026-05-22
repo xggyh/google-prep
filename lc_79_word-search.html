@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 79. Word Search 单词搜索 · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_79_word-search.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 79. Search 单词搜索</a></li>
+    <li><a href="lc_743_network-delay-time.html">LC 743. Delay Time 网络延迟时间</a></li>
+    <li><a href="lc_1101_earliest-acquaintance.html">LC 1101. Earliest Moment When Everyone Become Friends 彼此熟识的最早时间</a></li>
+    <li><a href="lc_1197_knight-moves.html">LC 1197. Knight Moves 进击的骑士</a></li>
+    <li><a href="lc_1254_closed-islands.html">LC 1254. of Closed Islands 统计封闭岛屿的数目</a></li>
+    <li><a href="lc_1740_tree-distance.html">LC 1740. Distance in a Binary Tree 找出二叉树中的距离</a></li>
+    <li><a href="lc_1928_min-cost-time-limit.html">LC 1928. Cost to Reach Destination in Time 规定时间内到达终点的最小花费</a></li>
+    <li><a href="lc_2101_detonate-bombs.html">LC 2101. the Maximum Bombs 引爆最多的炸弹</a></li>
+    <li><a href="lc_2258_escape-fire.html">LC 2258. the Spreading Fire 逃离火灾</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 79. Word Search 单词搜索</h1>
+  <p>类别：🗺️ 图 / BFS / DFS · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-mid">🔄 LC 变体</span></p>
+  <div class="meta">
+    <span class="badge">🗺️ 图 / BFS / DFS</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-mid">🔄 LC 变体</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：图 / DFS+Backtrack | <strong>难度</strong>：Medium | <strong>标记</strong>：🔄</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given an <code>m x n</code> grid of characters <code>board</code> and a string <code>word</code>, return <code>true</code> if <code>word</code> exists in the grid. The word can be constructed from letters of sequentially adjacent cells (horizontally or vertically), where the same cell may not be used more than once.</p>
+<p><strong>中文</strong>：在 m×n 字符网格中查找单词。单词由相邻（上下左右）格子组成，同一格子不能重复使用。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Case-sensitive? / Grid size? / Word length? / Can the word be empty? / Are there special characters?</li>
+<li><strong>中</strong>：大小写敏感？网格规模？单词长度？单词可以为空吗？有特殊字符吗？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>DFS + 回溯</strong>。从每个可能的起点（字符 = word[0]）出发，沿 4 方向搜索，匹配 word 的下一个字符。</p>
+<p><strong>关键技巧 — visited 标记直接改 board</strong>：把已访问的格子临时改成特殊字符（如 <code>#</code>），递归返回时改回来。省了一个 <code>visited</code> 集合的空间。</p>
+<p><strong>复杂度</strong>：O(m·n · 4^L)，L 是 word 长度。最坏指数级，实际剪枝后很快。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 边界</strong>
+- 空 board / 空 word：早返回。</p>
+<p><strong>Step 2 · 外层循环：枚举起点</strong>
+- 遍历所有格子，字符 = word[0] 的尝试 DFS。</p>
+<p><strong>Step 3 · DFS 函数签名</strong>
+- <code>dfs(i, j, idx)</code>：当前在 (i, j)，匹配 word[idx]。
+- 返回 True 表示能完成 <code>word[idx:]</code> 的匹配。</p>
+<p><strong>Step 4 · DFS 终止与剪枝</strong>
+- 越界 / 字符不匹配 → False。
+- <code>idx == len(word) - 1</code> 且字符匹配 → True。</p>
+<p><strong>Step 5 · 标记 + 递归 + 回溯</strong>
+- 改 <code>board[i][j] = '#'</code>（标记 visited）。
+- 4 方向递归，任一 True 就 True。
+- 改回 <code>board[i][j] = word[idx]</code>（无论成败都要恢复）。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 2-3 · 主函数 + DFS 签名</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">exist</span><span class="p">(</span><span class="n">board</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">word</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">board</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">board</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">m</span> <span class="ow">or</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">n</span> <span class="ow">or</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">word</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div>
+
+<p><strong>Step 5 · 标记 + 4 方向递归 + 回溯</strong></p>
+<div class="codehilite"><pre><span></span><code>        <span class="n">ch</span> <span class="o">=</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#&#39;</span>                     <span class="c1"># 标记 visited</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">(</span><span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span>
+                 <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span>
+                 <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span>
+                 <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ch</span>                      <span class="c1"># 回溯</span>
+        <span class="k">return</span> <span class="n">found</span>
+</code></pre></div>
+
+<p><strong>Step 2 · 枚举起点</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">word</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">exist</span><span class="p">(</span><span class="n">board</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">word</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">board</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">board</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">m</span> <span class="ow">or</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">n</span> <span class="ow">or</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">word</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#&#39;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">(</span><span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span>
+                 <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ch</span>
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">board</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">word</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>先讲思路：DFS + 回溯，强调"标记 visited 直接改 board"省空间。</li>
+<li>时间复杂度 O(m·n · 4^L) 主动给。</li>
+<li>提优化：起点剪枝（先比较 board 中 word[0] 和 word[-1] 的频率，从频率小的一端开始搜）。</li>
+<li>dry run 一个 3×3 小例子。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>回溯漏恢复</strong>：找到答案直接 return 时也要先恢复 board。</li>
+<li><strong>visited 没标记</strong>：同一格子被重复访问导致死循环。</li>
+<li><strong>idx 越界</strong>：终止条件要先判 <code>idx == len(word)</code> 再判字符匹配。</li>
+<li><strong>修改 board 副作用</strong>：面试场景一般允许，但要主动说明。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="index.html" class="prev"><span class="label">↩</span><span class="title">返回入口</span></a>
+  <a href="lc_743_network-delay-time.html" class="next"><span class="label">下一题 →</span><span class="title">LC 743. Delay Time 网络延迟时间</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

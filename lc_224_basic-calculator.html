@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 224. Basic Calculator 基本计算器 · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_139_word-break.html">LC 139. Break 单词拆分</a></li>
+    <li><a href="lc_140_word-break-ii.html">LC 140. Break II 单词拆分 II</a></li>
+    <li><a href="lc_224_basic-calculator.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 224. Calculator 基本计算器</a></li>
+    <li><a href="lc_772_basic-calculator-iii.html">LC 772. Calculator III 基本计算器 III</a></li>
+    <li><a href="lc_1233_remove-subfolders.html">LC 1233. Sub-Folders from the Filesystem 删除子文件夹</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 224. Basic Calculator 基本计算器</h1>
+  <p>类别：🔤 字符串 / 解析 / 栈 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-mid">🔄 LC 变体</span></p>
+  <div class="meta">
+    <span class="badge">🔤 字符串 / 解析 / 栈</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-mid">🔄 LC 变体</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：字符串 / 栈 / 解析 | <strong>难度</strong>：Hard | <strong>标记</strong>：🔄</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Implement a basic calculator for a string <code>s</code> containing digits, <code>+</code>, <code>-</code>, <code>(</code>, <code>)</code>, and spaces. No multiplication or division.</p>
+<p><strong>中文</strong>：实现基本计算器，支持 <code>+</code>、<code>-</code>、<code>(</code>、<code>)</code>、空格。整数可多位。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Can numbers be negative (e.g., <code>-3 + 2</code>)? / Whitespace handling? / Overflow?</li>
+<li><strong>中</strong>：可以有一元负号吗？空格怎么处理？溢出？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>栈处理括号 + 符号传递</strong>：
+- 维护 <code>result</code>（当前累计）、<code>sign</code>（当前数字的符号，+1 或 -1）。
+- 遇到 <code>(</code>：把当前 <code>result</code> 和 <code>sign</code> 压栈，重置。
+- 遇到 <code>)</code>：当前 <code>result *= 栈顶 sign</code>，再加上栈顶 <code>result</code>。
+- 遇到数字：读完整数 → <code>result += sign * num</code>。</p>
+<p><strong>复杂度</strong>：O(n) 一次遍历。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 初始化</strong>
+- <code>result = 0</code>，<code>sign = 1</code>，<code>stack = []</code>。</p>
+<p><strong>Step 2 · 遍历字符</strong>
+- 数字：读完整数，<code>result += sign * num</code>。
+- <code>+</code>：<code>sign = 1</code>。
+- <code>-</code>：<code>sign = -1</code>。
+- <code>(</code>：栈保存 <code>(result, sign)</code>，重置 <code>result=0, sign=1</code>。
+- <code>)</code>：pop 栈顶 <code>(prev_result, prev_sign)</code>，<code>result = prev_result + prev_sign * result</code>。
+- 空格：跳过。</p>
+<p><strong>Step 3 · 返回 result</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">result</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ch</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">num</span> <span class="o">=</span> <span class="n">num</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">num</span>
+            <span class="k">continue</span>
+        <span class="k">elif</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+            <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span><span class="p">:</span>
+            <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span><span class="p">:</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sign</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;)&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">*=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>                <span class="c1"># prev sign</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>                <span class="c1"># prev result</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>栈处理嵌套是经典套路。</li>
+<li>关键：sign 跟随括号入栈出栈。</li>
+<li>数字可能多位，要 while 内部循环读完。</li>
+<li>复杂度 O(n)。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>空格</strong>：必须 skip。</li>
+<li><strong>一元负号</strong>：<code>-3+2</code> 起点 sign = -1 已经默认处理。</li>
+<li><strong>多位数</strong>：while 读连续数字，不要只读一位。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_140_word-break-ii.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 140. Break II 单词拆分 II</span></a>
+  <a href="lc_772_basic-calculator-iii.html" class="next"><span class="label">下一题 →</span><span class="title">LC 772. Calculator III 基本计算器 III</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 3350. Adjacent Increasing Subarrays Detection II 检测相邻递增子数组 II · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_276_paint-fence.html">LC 276. Fence 栅栏涂色</a></li>
+    <li><a href="lc_3350_adjacent-increasing.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 3350. Increasing Subarrays Detection II 检测相邻递增子数组 II</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 3350. Adjacent Increasing Subarrays Detection II 检测相邻递增子数组 II</h1>
+  <p>类别：📐 DP / 数组 · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-low">➕ 额外推荐</span></p>
+  <div class="meta">
+    <span class="badge">📐 DP / 数组</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-low">➕ 额外推荐</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：数组 / DP | <strong>难度</strong>：Medium | <strong>标记</strong>：➕</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Find the <strong>maximum k</strong> such that there exist two adjacent strictly increasing subarrays of length <code>k</code> in <code>nums</code>. Return that k.</p>
+<p><strong>中文</strong>：找最大的 k，使得 nums 中存在两个相邻的、长度都为 k 的严格递增子数组。返回 k。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: "Adjacent" means they share an endpoint or are consecutive (no gap)? / Strictly increasing means <code>&lt;</code>?</li>
+<li><strong>中</strong>：相邻指首尾相接（无间隔）？严格递增是 <code>&lt;</code>？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>一遍扫 + 维护两个值</strong>：
+- <code>cur_len</code>：当前以 i 结尾的递增子数组长度。
+- <code>prev_len</code>：紧邻 cur 之前那个递增子数组的长度。</p>
+<p><strong>每个位置 i</strong>：
+- 若 <code>nums[i] &gt; nums[i-1]</code>：<code>cur_len += 1</code>。
+- 否则：<code>prev_len = cur_len; cur_len = 1</code>（开新段，旧段成为 prev）。
+- 答案：<code>max(ans, min(prev_len, cur_len), cur_len // 2)</code>。
+  - <code>min(prev_len, cur_len)</code>：两个相邻段都 ≥ 某个 k。
+  - <code>cur_len // 2</code>：单个段太长时，可以从中间切两半。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 初始化</strong> <code>cur_len = prev_len = 1</code>，<code>ans = 1</code>。</p>
+<p><strong>Step 2 · 遍历 i 从 1 到 n-1</strong></p>
+<p><strong>Step 3 · 判断递增</strong>
+- 是 → <code>cur_len += 1</code>。
+- 否 → <code>prev_len = cur_len</code>，<code>cur_len = 1</code>。</p>
+<p><strong>Step 4 · 每步更新 ans</strong>
+- <code>ans = max(ans, min(prev_len, cur_len), cur_len // 2)</code>。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">maxIncreasingSubarrays</span><span class="p">(</span><span class="n">nums</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">cur_len</span> <span class="o">=</span> <span class="n">prev_len</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="n">cur_len</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prev_len</span> <span class="o">=</span> <span class="n">cur_len</span>
+            <span class="n">cur_len</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">prev_len</span><span class="p">,</span> <span class="n">cur_len</span><span class="p">),</span> <span class="n">cur_len</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>关键洞察：两种来源 — 两个相邻段、或一段切两半。</li>
+<li>O(n) 一遍扫，O(1) 空间。</li>
+<li>主动 dry run 一个 <code>[1,2,3,2,3,4,1,2]</code> 验证。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>「相邻」的定义</strong>：必须无间隔（一个紧接另一个）。</li>
+<li><strong><code>cur_len // 2</code></strong>：单段 &gt;= 2k 时也能切成两个长 k 的段。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_276_paint-fence.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 276. Fence 栅栏涂色</span></a>
+  <a href="lc_450_delete-node-bst.html" class="next"><span class="label">下一题 →</span><span class="title">LC 450. Node in a BST 删除二叉搜索树中的节点</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

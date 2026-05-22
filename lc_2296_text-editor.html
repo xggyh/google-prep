@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 2296. Design a Text Editor 设计文本编辑器 · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_460_lfu-cache.html">LC 460. Cache LFU 缓存</a></li>
+    <li><a href="lc_588_file-system.html">LC 588. In-Memory File System 设计内存文件系统</a></li>
+    <li><a href="lc_642_autocomplete.html">LC 642. Search Autocomplete System 设计搜索自动补全系统</a></li>
+    <li><a href="lc_2296_text-editor.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 2296. a Text Editor 设计文本编辑器</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 2296. Design a Text Editor 设计文本编辑器</h1>
+  <p>类别：🏗️ OOP 设计 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-mid">🔄 LC 变体</span></p>
+  <div class="meta">
+    <span class="badge">🏗️ OOP 设计</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-mid">🔄 LC 变体</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：OOP 设计 / 双栈 | <strong>难度</strong>：Hard | <strong>标记</strong>：🔄</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Implement:
+- <code>addText(text)</code>: insert text at cursor.
+- <code>deleteText(k)</code>: delete k chars before cursor; return actual deleted count.
+- <code>cursorLeft(k)</code>: move cursor left k; return last 10 chars before cursor.
+- <code>cursorRight(k)</code>: move cursor right k; return last 10 chars before cursor.</p>
+<p><strong>中文</strong>：文本编辑器，光标操作 + 删除 + 插入。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Initial text? (empty) / k always valid?</li>
+<li><strong>中</strong>：初始空？k 是否一定合法？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>两个栈，光标在中间</strong>：</p>
+<div class="codehilite"><pre><span></span><code>[a b c d] ← cursor → [e f g h]
+ left[]                right[] (倒序)
+</code></pre></div>
+
+<ul>
+<li>left[-1] = 光标紧贴左侧字符。</li>
+<li>right[-1] = 光标紧贴右侧字符（栈顶 = 距离光标最近）。</li>
+</ul>
+<p><strong>所有操作 O(1) 均摊</strong>。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 状态：两个 list</strong>
+- <code>left, right</code>。</p>
+<p><strong>Step 2 · addText(text)</strong>
+- <code>left.extend(text)</code>。</p>
+<p><strong>Step 3 · deleteText(k)</strong>
+- <code>k = min(k, len(left))</code>。
+- <code>del left[-k:]</code> 或 <code>for _ in range(k): left.pop()</code>。
+- 返回 k。</p>
+<p><strong>Step 4 · cursorLeft(k)</strong>
+- 把 left 的 k 个 char pop 到 right。
+- 返回 <code>"".join(left[-10:])</code>。</p>
+<p><strong>Step 5 · cursorRight(k)</strong>
+- 把 right 的 k 个 char pop 到 left。
+- 返回 <code>"".join(left[-10:])</code>。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">TextEditor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">addText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deleteText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">k</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">k</span>
+
+    <span class="k">def</span> <span class="nf">cursorLeft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+            <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:])</span>
+
+    <span class="k">def</span> <span class="nf">cursorRight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+            <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:])</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>双栈模型是核心抽象。</li>
+<li>4 个 API 都是 O(1) 摊还。</li>
+<li>dry run 一遍 add → cursorLeft → delete。</li>
+<li>提对比：数组实现是 O(n)。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>k 比剩余字符多</strong>：用 min 取小。</li>
+<li><strong><code>left[-10:]</code> 不够 10 个</strong>：Python 切片不报错，直接返回有的。</li>
+<li><strong>right 栈倒序</strong>：left 是从底到顶就是文本顺序，right 是从顶到底是文本顺序。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_642_autocomplete.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 642. Search Autocomplete System 设计搜索自动补全系统</span></a>
+  <a href="lc_289_game-of-life.html" class="next"><span class="label">下一题 →</span><span class="title">LC 289. of Life 生命游戏</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

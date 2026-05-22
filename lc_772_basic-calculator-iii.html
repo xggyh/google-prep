@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 772. Basic Calculator III 基本计算器 III · 30 题精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_139_word-break.html">LC 139. Break 单词拆分</a></li>
+    <li><a href="lc_140_word-break-ii.html">LC 140. Break II 单词拆分 II</a></li>
+    <li><a href="lc_224_basic-calculator.html">LC 224. Calculator 基本计算器</a></li>
+    <li><a href="lc_772_basic-calculator-iii.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 772. Calculator III 基本计算器 III</a></li>
+    <li><a href="lc_1233_remove-subfolders.html">LC 1233. Sub-Folders from the Filesystem 删除子文件夹</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 772. Basic Calculator III 基本计算器 III</h1>
+  <p>类别：🔤 字符串 / 解析 / 栈 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-mid">🔄 LC 变体</span></p>
+  <div class="meta">
+    <span class="badge">🔤 字符串 / 解析 / 栈</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-mid">🔄 LC 变体</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：字符串 / 栈 / 解析 | <strong>难度</strong>：Hard | <strong>标记</strong>：🔄</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Calculator supporting <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>(</code>, <code>)</code>, spaces, non-negative integers.</p>
+<p><strong>中文</strong>：支持 <code>+-*/</code> 和括号的计算器。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Integer division — round toward zero? / Negative results allowed?</li>
+<li><strong>中</strong>：整数除法向 0 取整还是向下取整？结果可负吗？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>递归下降 + 栈</strong>：
+- <strong>内层栈</strong>处理 <code>*</code> 和 <code>/</code> 的优先级 — 维护一个 nums 栈，遇 <code>*</code> 或 <code>/</code> 立即与栈顶结合。
+- <strong>外层递归</strong>处理 <code>(...)</code> — 遇到 <code>(</code> 递归调用，跳过对应 <code>)</code>。</p>
+<p><strong>最后栈里全是要相加减的项</strong>（<code>-</code> 已转成负数），求和即可。</p>
+<p><strong>复杂度</strong>：O(n)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 主函数：扫描 s，维护游标 i</strong></p>
+<p><strong>Step 2 · 数字读取</strong></p>
+<p><strong>Step 3 · 运算符处理</strong>
+- <code>prev_op</code> 记录"上一个运算符"，初始 <code>+</code>。
+- 数字读完时根据 prev_op 处理：
+  - <code>+</code>: push num。
+  - <code>-</code>: push -num。
+  - <code>*</code>: pop 栈顶 <code>*=</code> num 再 push。
+  - <code>/</code>: pop 栈顶 <code>int(top / num)</code> 再 push（向 0 取整）。</p>
+<p><strong>Step 4 · 遇 <code>(</code> 递归求子表达式</strong></p>
+<p><strong>Step 5 · 遇 <code>)</code> 或 end-of-string → 求 stack 和返回</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">helper</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">prev_op</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="n">ch</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ch</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="n">num</span> <span class="o">=</span> <span class="n">num</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span><span class="p">:</span>
+                <span class="n">num</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="n">helper</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ch</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="n">ch</span> <span class="o">!=</span> <span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prev_op</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">prev_op</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="n">num</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">prev_op</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">*</span> <span class="n">num</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">prev_op</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">/</span> <span class="n">num</span><span class="p">))</span>
+                <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">prev_op</span> <span class="o">=</span> <span class="n">ch</span>
+                <span class="k">if</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;)&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stack</span><span class="p">),</span> <span class="n">i</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stack</span><span class="p">),</span> <span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">helper</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上，相当紧凑）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>两层结构：栈处理 <code>*/</code>，递归处理括号。</li>
+<li>关键 idiom：用 <code>prev_op</code> 延迟处理（数字读完才结合）。</li>
+<li>整数除法用 <code>int(a / b)</code> 而非 <code>a // b</code>（Python <code>//</code> 向下取整，<code>int()</code> 向 0 取整 — 符合多数语言语义）。</li>
+<li>复杂度 O(n)。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong><code>/</code> 取整方向</strong>：<code>-7 // 2 = -4</code> 但题目要 <code>-3</code>，必须用 <code>int(a/b)</code>。</li>
+<li><strong>末尾结算</strong>：到字符串末尾或遇 ')' 都要做最后一次入栈。</li>
+<li><strong>空格</strong>：判断条件加 <code>ch != ' '</code> 避免空格触发结算。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_224_basic-calculator.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 224. Calculator 基本计算器</span></a>
+  <a href="lc_1233_remove-subfolders.html" class="next"><span class="label">下一题 →</span><span class="title">LC 1233. Sub-Folders from the Filesystem 删除子文件夹</span></a>
+</div>
+
+<footer>
+  LeetCode 30 题精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>
