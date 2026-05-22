@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 原创 G04. Max Subarray Sum with Equal Endpoints 最大子段和 a[i]==a[j] · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_276_paint-fence.html">LC 276. Fence 栅栏涂色</a></li>
+    <li><a href="lc_3350_adjacent-increasing.html">LC 3350. Increasing Subarrays Detection II 检测相邻递增子数组 II</a></li>
+    <li><a href="lc_354_russian-doll-envelopes.html">LC 354. Doll Envelopes 俄罗斯套娃信封</a></li>
+    <li><a href="lc_1944_visible-people-queue.html">LC 1944. of Visible People in a Queue 队列中可以看到的人数</a></li>
+    <li><a href="go_G03_gold-chain.html">Google 原创 G03. Chain Equal Split 金链平分</a></li>
+    <li><a href="go_G04_max-subarray-equal-endpoints.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">Google 原创 G04. Subarray Sum with Equal Endpoints 最大子段和 a[i]==a[j]</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>Google 原创 G04. Max Subarray Sum with Equal Endpoints 最大子段和 a[i]==a[j]</h1>
+  <p>类别：📐 DP / 数组 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-low">🆕 Google 原创</span></p>
+  <div class="meta">
+    <span class="badge">📐 DP / 数组</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-low">🆕 Google 原创</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：DP / 数组 | <strong>难度</strong>：Hard | <strong>标记</strong>：Google 原创 | <strong>来源</strong>：NG R2 R2</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given array <code>a</code>, find <code>(i, j)</code> with <code>i ≤ j</code> and <code>a[i] == a[j]</code> that maximizes <code>a[i] + a[i+1] + ... + a[j]</code>. Return the (i, j) pair. <strong>Follow-up</strong>: O(1) extra space.</p>
+<p><strong>中文</strong>：数组 a，找 <code>(i, j)</code> 满足 <code>i ≤ j</code> 且 <code>a[i] == a[j]</code>，使得 <code>sum(a[i..j])</code> 最大。返回 (i, j)。Follow-up：O(1) 额外空间。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: i == j allowed (single element)? / Negative numbers possible? / Multiple max — any one?</li>
+<li><strong>中</strong>：i == j（单点）算吗？数组有负数吗？多个相同最大值返回哪个？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>核心</strong>：对每个 value v，找它在数组中<strong>最左</strong>和<strong>最右</strong>的位置 (l, r)。然后 max sum subarray with endpoints == v 就是 <code>prefix[r+1] - prefix[l]</code>。</p>
+<p><strong>遍历所有 unique v</strong>，取 max。</p>
+<p><strong>复杂度</strong>：O(n) — 一遍扫记录 first/last，再一遍算 prefix。</p>
+<p><strong>Follow-up O(1) space</strong>：用两次遍历：
+- 第一次找全局唯一值（首尾位置一致的）...
+- 实际上要 O(1) 较难，需要排序或更多前提。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 算 prefix sum</strong>
+- <code>pref[i] = a[0] + a[1] + ... + a[i-1]</code>。
+- <code>sum(a[i..j]) = pref[j+1] - pref[i]</code>。</p>
+<p><strong>Step 2 · 对每个 value 记录 first / last 位置</strong>
+- 一遍扫，HashMap：value → (first_idx, last_idx)。</p>
+<p><strong>Step 3 · 对每个 value 算 sum</strong>
+- <code>sum = pref[last+1] - pref[first]</code>，与全局 max 比较。</p>
+<p><strong>Step 4 · 返回最优 (i, j)</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1-2 · 前缀和 + first/last map</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">max_sum_equal_endpoints</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">pref</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">pref</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pref</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">first</span><span class="p">:</span>
+            <span class="n">first</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">last</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+</code></pre></div>
+
+<p><strong>Step 3-4 · 取最大</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="n">best_sum</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;-inf&#39;</span><span class="p">)</span>
+    <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">first</span><span class="p">:</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">first</span><span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">last</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pref</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">pref</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="o">&gt;</span> <span class="n">best_sum</span><span class="p">:</span>
+            <span class="n">best_sum</span> <span class="o">=</span> <span class="n">s</span>
+            <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span> <span class="o">=</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+    <span class="k">return</span> <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">max_sum_equal_endpoints</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">pref</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">pref</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pref</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">first</span><span class="p">:</span>
+            <span class="n">first</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">last</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+    <span class="n">best_sum</span><span class="p">,</span> <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;-inf&#39;</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">first</span><span class="p">:</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">first</span><span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">last</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pref</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">pref</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="o">&gt;</span> <span class="n">best_sum</span><span class="p">:</span>
+            <span class="n">best_sum</span><span class="p">,</span> <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span> <span class="o">=</span> <span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+    <span class="k">return</span> <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>关键洞察：对每个 v，最佳 (i, j) 就是首尾位置（中间元素都已包含）。</li>
+<li>前缀和 O(1) 查询区间 sum。</li>
+<li>两遍扫，O(n) 时间 O(n) 空间。</li>
+<li>Follow-up O(1) space：诚实承认 hard，可以提"如果数组排序就可以"。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>不是找最大 v</strong>：是找让 <code>sum(a[i..j])</code> 最大的 v。负数可能让长 segment 反而和小。</li>
+<li><strong>first/last 同一位置</strong>：单点 (i=j) 也算合法，sum = a[i]。</li>
+<li><strong>空数组</strong>：return (-1, -1) 或抛异常，先问。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="go_G03_gold-chain.html" class="prev"><span class="label">← 上一题</span><span class="title">G03. Chain Equal Split 金链平分</span></a>
+  <a href="go_G05_unique-ranking-finder.html" class="next"><span class="label">下一题 →</span><span class="title">G05. Ranking Finder 排名唯一可确定的选手</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 354. Russian Doll Envelopes 俄罗斯套娃信封 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_276_paint-fence.html">LC 276. Fence 栅栏涂色</a></li>
+    <li><a href="lc_3350_adjacent-increasing.html">LC 3350. Increasing Subarrays Detection II 检测相邻递增子数组 II</a></li>
+    <li><a href="lc_354_russian-doll-envelopes.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 354. Doll Envelopes 俄罗斯套娃信封</a></li>
+    <li><a href="lc_1944_visible-people-queue.html">LC 1944. of Visible People in a Queue 队列中可以看到的人数</a></li>
+    <li><a href="go_G03_gold-chain.html">Google 原创 G03. Chain Equal Split 金链平分</a></li>
+    <li><a href="go_G04_max-subarray-equal-endpoints.html">Google 原创 G04. Subarray Sum with Equal Endpoints 最大子段和 a[i]==a[j]</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 354. Russian Doll Envelopes 俄罗斯套娃信封</h1>
+  <p>类别：📐 DP / 数组 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-high">⭐ Google 直接对应</span></p>
+  <div class="meta">
+    <span class="badge">📐 DP / 数组</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-high">⭐ Google 直接对应</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：DP / 数组 | <strong>难度</strong>：Hard | <strong>标记</strong>：⭐</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Each envelope <code>[w, h]</code>. One can fit into another if both dimensions are strictly smaller. Find max number nested.</p>
+<p><strong>中文</strong>：每个信封 <code>[宽, 高]</code>。一个信封能套到另一个里当且仅当<strong>严格小于</strong>。求最多能套几层。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Can rotate? (No) / Equal dimensions count as fit? (No, strict) / Duplicates allowed?</li>
+<li><strong>中</strong>：能旋转吗？相等算 fit 吗（严格小于）？重复信封？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>降维成 LIS（最长递增子序列）</strong>：</p>
+<ol>
+<li><strong>排序 trick</strong>：按 <code>w</code> 升序，<strong><code>w</code> 相同的按 <code>h</code> 降序</strong>。</li>
+<li>排序后，只需对 <code>h</code> 跑 LIS — 因为 w 相同时 h 降序保证它们不会互相套（严格小于不满足）。</li>
+</ol>
+<p><strong>LIS O(n log n)</strong>：patience sort 用二分。</p>
+<p><strong>复杂度</strong>：O(n log n)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 排序 with tie-breaker</strong>
+- <code>key = (w, -h)</code>：w 升，h 降（用于解决严格小于）。</p>
+<p><strong>Step 2 · 对 h 跑 LIS O(n log n)</strong>
+- 维护数组 <code>tails</code>，<code>tails[i]</code> 是长度 i+1 的 LIS 的最小末尾。
+- 遍历每个 h：用二分找第一个 ≥ h 的位置，替换或追加。</p>
+<p><strong>Step 3 · 返回 <code>len(tails)</code></strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 排序</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">bisect_left</span>
+
+<span class="k">def</span> <span class="nf">maxEnvelopes</span><span class="p">(</span><span class="n">envelopes</span><span class="p">):</span>
+    <span class="n">envelopes</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</code></pre></div>
+
+<p><strong>Step 2 · LIS on h</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="n">tails</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">envelopes</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="n">tails</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tails</span><span class="p">):</span>
+            <span class="n">tails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tails</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">tails</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">bisect_left</span>
+
+<span class="k">def</span> <span class="nf">maxEnvelopes</span><span class="p">(</span><span class="n">envelopes</span><span class="p">):</span>
+    <span class="n">envelopes</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">tails</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">envelopes</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="n">tails</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tails</span><span class="p">):</span>
+            <span class="n">tails</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tails</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">tails</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li><strong>关键洞察 — 排序 trick</strong>：w 同时 h 降序，避免 w 相等时套娃。</li>
+<li>转化成 LIS 是核心。</li>
+<li>patience sort + 二分 = O(n log n) LIS。</li>
+<li>单独讲为什么 h 降序：举例 [3,3],[3,4]，如果都升序会被错误地套进 LIS。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>w 同时 h 升序</strong>：会错把 [3,3],[3,4] 当成可套，但 w 相等不严格 &lt; 是不行的。</li>
+<li><strong>bisect_left vs bisect_right</strong>：严格 &lt; 用 bisect_left，"&lt;=" 用 bisect_right。</li>
+<li><strong>二维 LIS 直接 O(n²) DP</strong> 也能过小数据，但 Hard 题最好给 O(n log n)。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_249_group-shifted-strings.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 249. Shifted Strings 移位字符串分组</span></a>
+  <a href="lc_370_range-addition.html" class="next"><span class="label">下一题 →</span><span class="title">LC 370. Addition 区间加法</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

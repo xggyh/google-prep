@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 809. Expressive Words 情感丰富的文字 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_139_word-break.html">LC 139. Break 单词拆分</a></li>
+    <li><a href="lc_140_word-break-ii.html">LC 140. Break II 单词拆分 II</a></li>
+    <li><a href="lc_224_basic-calculator.html">LC 224. Calculator 基本计算器</a></li>
+    <li><a href="lc_772_basic-calculator-iii.html">LC 772. Calculator III 基本计算器 III</a></li>
+    <li><a href="lc_1233_remove-subfolders.html">LC 1233. Sub-Folders from the Filesystem 删除子文件夹</a></li>
+    <li><a href="lc_249_group-shifted-strings.html">LC 249. Shifted Strings 移位字符串分组</a></li>
+    <li><a href="lc_809_expressive-words.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 809. Words 情感丰富的文字</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 809. Expressive Words 情感丰富的文字</h1>
+  <p>类别：🔤 字符串 / 解析 / 栈 · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-high">⭐ Google 直接对应</span></p>
+  <div class="meta">
+    <span class="badge">🔤 字符串 / 解析 / 栈</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-high">⭐ Google 直接对应</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：字符串 / 双指针 | <strong>难度</strong>：Medium | <strong>标记</strong>：⭐</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: A string <code>s</code> is "stretchy" if a word <code>w</code> can produce <code>s</code> by extending some groups (consecutive same chars) to length ≥ 3. Given <code>s</code> and a list of words, return how many words are stretchy.</p>
+<p><strong>中文</strong>：字符串 <code>s</code> 是"伸展"的，如果某个 word 可以通过把某些连续重复字符<strong>扩展到长度 ≥ 3</strong> 而变成 s。给 s 和 words 列表，求多少 word 满足。</p>
+<blockquote>
+<p>0522 面经里的"键盘卡键"题是这道题的简化版（去掉了 "≥ 3" 限制）。</p>
+</blockquote>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Original group of length 1 in word can be extended (to ≥ 3 in s)? / What if s has shorter group than word?</li>
+<li><strong>中</strong>：word 中长度 1 的组可以扩展到 3+ 吗？word 的某组比 s 长怎么办？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>双指针扫 word 和 s</strong>：
+- 对每个连续字符组，比较 word 的长度 wlen 和 s 的长度 slen：
+  - <code>wlen == slen</code>：OK。
+  - <code>wlen &lt; slen and slen &gt;= 3</code>：OK（被扩展了）。
+  - 否则：fail。</p>
+<p><strong>复杂度</strong>：O(N · L)，N 是 word 数，L 是 s 长度。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 写辅助函数 <code>is_stretchy(s, word)</code></strong>
+- 两个指针 i (s)、j (word)。
+- 同步走，比较字符 + 组长度。</p>
+<p><strong>Step 2 · 主流程</strong>
+- 对每个 word 调 <code>is_stretchy(s, word)</code>，是就 count++。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · is_stretchy 函数</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">is_stretchy</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">word</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="c1"># 算两边连续组长度</span>
+        <span class="n">ci</span><span class="p">,</span> <span class="n">cj</span> <span class="o">=</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span>
+        <span class="k">while</span> <span class="n">ci</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">ci</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">ci</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="n">cj</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="ow">and</span> <span class="n">word</span><span class="p">[</span><span class="n">cj</span><span class="p">]</span> <span class="o">==</span> <span class="n">word</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+            <span class="n">cj</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">slen</span><span class="p">,</span> <span class="n">wlen</span> <span class="o">=</span> <span class="n">ci</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">cj</span> <span class="o">-</span> <span class="n">j</span>
+        <span class="k">if</span> <span class="n">slen</span> <span class="o">&lt;</span> <span class="n">wlen</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">slen</span> <span class="o">!=</span> <span class="n">wlen</span> <span class="ow">and</span> <span class="n">slen</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">ci</span><span class="p">,</span> <span class="n">cj</span>
+    <span class="k">return</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 2 · 主函数</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">expressiveWords</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">words</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">words</span> <span class="k">if</span> <span class="n">is_stretchy</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>双指针 + 组长度比较，思路清晰。</li>
+<li>关键条件：<code>slen &gt;= wlen and (slen == wlen or slen &gt;= 3)</code>。</li>
+<li>注意末尾边界：i == len(s) AND j == len(word) 才算完整匹配。</li>
+<li>面经 follow-up：先把 word 压缩成 signature，整体降复杂度。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>少检查 "&lt; 3"</strong>：扩展必须扩到 3+。</li>
+<li><strong>末尾不对齐</strong>：一边走完另一边没走完 → 不算 match。</li>
+<li><strong>字符不同直接 return</strong>：要在比组长度之前先判字符。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_370_range-addition.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 370. Addition 区间加法</span></a>
+  <a href="lc_1944_visible-people-queue.html" class="next"><span class="label">下一题 →</span><span class="title">LC 1944. of Visible People in a Queue 队列中可以看到的人数</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

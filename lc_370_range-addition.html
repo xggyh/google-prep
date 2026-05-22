@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 370. Range Addition 区间加法 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_215_kth-largest.html">LC 215. Largest Element in an Array 数组中的第 K 个最大元素</a></li>
+    <li><a href="lc_253_meeting-rooms-ii.html">LC 253. Rooms II 会议室 II</a></li>
+    <li><a href="lc_347_top-k-frequent.html">LC 347. K Frequent Elements 前 K 个高频元素</a></li>
+    <li><a href="lc_1167_connect-sticks.html">LC 1167. Cost to Connect Sticks 连接棒材的最低费用</a></li>
+    <li><a href="lc_1854_max-population.html">LC 1854. Population Year 人口最多的年份</a></li>
+    <li><a href="lc_2402_meeting-rooms-iii.html">LC 2402. Rooms III 会议室 III</a></li>
+    <li><a href="lc_2655_max-uncovered-ranges.html">LC 2655. Maximal Uncovered Ranges 寻找最大长度的未覆盖区间</a></li>
+    <li><a href="lc_370_range-addition.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 370. Addition 区间加法</a></li>
+    <li><a href="go_G02_k-queues-min-sum.html">Google 原创 G02. Sum / Min Size from K Queues K 个队列找最小</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 370. Range Addition 区间加法</h1>
+  <p>类别：📚 堆 / 扫描线 · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-low">➕ 额外推荐</span></p>
+  <div class="meta">
+    <span class="badge">📚 堆 / 扫描线</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-low">➕ 额外推荐</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：堆 / 扫描线 / 差分数组 | <strong>难度</strong>：Medium | <strong>标记</strong>：➕</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Length <code>n</code> array initialized 0. Given <code>updates[i] = [startIdx, endIdx, inc]</code>. For each update, add <code>inc</code> to <code>arr[startIdx..endIdx]</code> (both inclusive). Return final array.</p>
+<p><strong>中文</strong>：长 n 数组全 0。一组 <code>[l, r, inc]</code> 更新，把 <code>arr[l..r]</code> 都加 inc。返回最终数组。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: endIdx inclusive? / Number of updates?</li>
+<li><strong>中</strong>：r 是闭区间吗？更新次数？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>差分数组</strong>：把每次 O(n) 的区间更新降到 O(1)。最后一次前缀和还原。</p>
+<p><strong>核心 idiom</strong>：</p>
+<div class="codehilite"><pre><span></span><code>diff[l] += inc
+diff[r+1] -= inc
+</code></pre></div>
+
+<p>最后 <code>arr[i] = sum(diff[0..i])</code> 就是结果。</p>
+<p><strong>复杂度</strong>：O(N + K)，K 是更新次数。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 建差分数组</strong>
+- <code>diff = [0] * (n + 1)</code>（多一个位置避免越界）。</p>
+<p><strong>Step 2 · 每个 update 做差分</strong>
+- <code>diff[l] += inc</code>
+- <code>diff[r+1] -= inc</code></p>
+<p><strong>Step 3 · 前缀和还原</strong>
+- 遍历一遍累加。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">getModifiedArray</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">updates</span><span class="p">):</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">inc</span> <span class="ow">in</span> <span class="n">updates</span><span class="p">:</span>
+        <span class="n">diff</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">+=</span> <span class="n">inc</span>
+        <span class="n">diff</span><span class="p">[</span><span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">inc</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">length</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">+=</span> <span class="n">diff</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span>
+    <span class="k">return</span> <span class="n">arr</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>差分数组是经典 O(1) 区间更新模板。</li>
+<li>多分配 1 个位置避免 r+1 越界。</li>
+<li>复杂度 O(N + K) 比朴素 O(N·K) 好很多。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong><code>r+1</code> 越界</strong>：必须分配 length+1 大小。</li>
+<li><strong>闭区间 vs 半开</strong>：要先问。</li>
+<li><strong>多次累加问题</strong>：单次 update 只动两个位置，重叠 update 也只是叠加这两个位置。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_354_russian-doll-envelopes.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 354. Doll Envelopes 俄罗斯套娃信封</span></a>
+  <a href="lc_809_expressive-words.html" class="next"><span class="label">下一题 →</span><span class="title">LC 809. Words 情感丰富的文字</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

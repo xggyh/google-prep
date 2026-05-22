@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 原创 G01. File System Total Size 文件系统总大小（带 cycle / cache） · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_450_delete-node-bst.html">LC 450. Node in a BST 删除二叉搜索树中的节点</a></li>
+    <li><a href="go_G01_file-system-size.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">Google 原创 G01. System Total Size 文件系统总大小（带 cycle / cache）</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>Google 原创 G01. File System Total Size 文件系统总大小（带 cycle / cache）</h1>
+  <p>类别：🌳 树 / BST · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-low">🆕 Google 原创</span></p>
+  <div class="meta">
+    <span class="badge">🌳 树 / BST</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-low">🆕 Google 原创</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：树 / 递归 + 缓存 | <strong>难度</strong>：Medium | <strong>标记</strong>：Google 原创 | <strong>来源</strong>：26ng r2 onsite R1</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Compute the total size of a directory in a file system. Each file has a size; each directory contains files + sub-directories. Compute recursively. Variants: (1) hard links may create cycles, need cycle detection; (2) optimize repeated calls with cache.</p>
+<p><strong>中文</strong>：计算文件系统某目录的总大小。递归求子文件 + 子目录。变体：(1) hard link 可能成环，需要 cycle detection；(2) 多次查询，要用 cache 优化。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Hard links possible? / Are sizes pre-computed for files only? / Multi-threaded calls?</li>
+<li><strong>中</strong>：有 hard link（环）吗？只有 file 有 size 还是 dir 也有？多次查询？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>最基础版本（严格树）</strong>：
+- 递归：dir 的 size = 所有子文件 size + 所有子目录递归 size。
+- O(N)。</p>
+<p><strong>变体 1：cycle detection</strong>：
+- 用 visited set 避免重复访问。</p>
+<p><strong>变体 2：cache（多次查询场景）</strong>：
+- 给每个 dir 缓存 size，第二次访问直接返回。
+- 注意：cache invalidation 是难点 — 文件添加/删除后要重新算。</p>
+<p><strong>复杂度</strong>：第一次 O(N)，后续命中 O(1)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 数据结构假设</strong>
+- <code>dir.subdirs: list[Dir]</code>，<code>dir.files: list[File]</code>，<code>file.size: int</code>。</p>
+<p><strong>Step 2 · 朴素递归</strong>
+- <code>total(dir) = sum(f.size for f in dir.files) + sum(total(sd) for sd in dir.subdirs)</code>。</p>
+<p><strong>Step 3 · cycle detection（变体 1）</strong>
+- 维护 visited set，遇到已访问的 dir 跳过。</p>
+<p><strong>Step 4 · cache（变体 2）</strong>
+- 在 Dir 对象上加 <code>_cached_size</code>（懒计算）。
+- 第一次访问算出来 + 存；之后直接返回。
+- 修改时清理：上游每个父 dir 的 cache 也要 invalidate。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 2 · 基础递归</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">total_size</span><span class="p">(</span><span class="nb">dir</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">dir</span><span class="o">.</span><span class="n">files</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">total_size</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="nb">dir</span><span class="o">.</span><span class="n">subdirs</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 3 · cycle detection</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">total_size_cyclesafe</span><span class="p">(</span><span class="nb">dir</span><span class="p">):</span>
+    <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">files</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">dfs</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">subdirs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dfs</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Step 4 · cache 版</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Dir</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subdirs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_size</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_size</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sd</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdirs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_size</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">invalidate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># 当 self 内容变化时, 清掉自己和所有祖先的 cache</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">while</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">_cached_size</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<p>（见上 — 三个版本逐步演进）</p>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>先做最简单 O(N) 朴素版。</li>
+<li>主动提 cycle 风险（hard link）→ visited set。</li>
+<li>follow-up 多次查询 → cache + invalidation。</li>
+<li>复杂度 first call O(N)，subsequent O(1)（命中）。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>递归用 <code>id(d)</code></strong> 而非对象本身：避免 hashable 问题。</li>
+<li><strong>cache invalidation</strong>：修改文件时，所有祖先的 cache 都要清，不只当前 dir。</li>
+<li><strong>"strict tree" 简化</strong>：如果面试官说严格树，可以省 visited，但 cache 仍可加。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="index.html" class="prev"><span class="label">↩</span><span class="title">返回入口</span></a>
+  <a href="go_G02_k-queues-min-sum.html" class="next"><span class="label">下一题 →</span><span class="title">G02. Sum / Min Size from K Queues K 个队列找最小</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

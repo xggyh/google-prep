@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 206. Reverse Linked List 反转链表（含 hash 验证变体） · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#python-完整实现">Python 完整实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_289_game-of-life.html">LC 289. of Life 生命游戏</a></li>
+    <li><a href="lc_1279_traffic-light.html">LC 1279. Light Controlled Intersection 红绿灯路口</a></li>
+    <li><a href="lc_206_reverse-linked-list.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 206. Linked List 反转链表（含 hash 验证变体）</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 206. Reverse Linked List 反转链表（含 hash 验证变体）</h1>
+  <p>类别：🎮 模拟 / 链表 / 并发 · 难度：<span class="diff-easy">Easy</span> · 标记：<span class="conf-low">➕ 额外推荐</span></p>
+  <div class="meta">
+    <span class="badge">🎮 模拟 / 链表 / 并发</span>
+    <span class="badge"><span class="diff-easy">Easy</span></span>
+    <span class="badge"><span class="conf-low">➕ 额外推荐</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：模拟 / 链表 | <strong>难度</strong>：Easy | <strong>标记</strong>：➕</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Reverse a singly linked list. Variant from Google: each node has a <code>hash</code> field where <code>hash = val + hash(next)</code>. After reverse, verify the hash chain still holds (hash now propagates in the new direction).</p>
+<p><strong>中文</strong>：反转单链表。Google 变体：每个节点有 <code>hash = val + hash(next)</code>。反转后 hash 也要重新计算成新方向的链。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: In-place? / Iterative or recursive ok? / What's hash of null? (Usually 0)</li>
+<li><strong>中</strong>：原地反转？迭代还是递归？空节点的 hash 是什么？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>反转链表</strong> = 经典三指针迭代：<code>prev / cur / nxt</code>。</p>
+<p><strong>Hash 验证</strong>：原始链表 <code>hash[i] = val[i] + hash[i+1]</code>，反转后 <code>hash[i] = val[i] + hash[i-1]</code>（在新链表里）。所以反转过程中重新计算每个节点的 hash。</p>
+<p><strong>关键 idiom</strong>：边反转边重算 hash，无需再扫一遍。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 边界</strong>
+- <code>head</code> 为 None → 直接返回。</p>
+<p><strong>Step 2 · 三指针 + hash 累加</strong>
+- 维护 <code>prev = None</code>，<code>cur = head</code>，<code>prev_hash = 0</code>。
+- 每一步：
+  - 记下 <code>nxt = cur.next</code>。
+  - <code>cur.next = prev</code>（反转指针）。
+  - <code>cur.hash = cur.val + prev_hash</code>（重算 hash）。
+  - 更新 <code>prev = cur</code>，<code>prev_hash = cur.hash</code>，<code>cur = nxt</code>。</p>
+<p><strong>Step 3 · 返回新 head</strong>
+- 循环结束时 <code>prev</code> 就是新 head。</p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<p><strong>Step 1 · 边界</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="nb">next</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="nb">next</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">reverseWithHash</span><span class="p">(</span><span class="n">head</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">head</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+
+<p><strong>Step 2 · 三指针 + hash 重算</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="n">prev</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">head</span>
+    <span class="n">prev_hash</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">cur</span><span class="p">:</span>
+        <span class="n">nxt</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">next</span>                     <span class="c1"># 保存下一个</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">prev</span>                    <span class="c1"># 反转指针</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">val</span> <span class="o">+</span> <span class="n">prev_hash</span>     <span class="c1"># 重新计算 hash</span>
+        <span class="n">prev_hash</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">hash</span>               <span class="c1"># 推进 prev_hash</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">cur</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">nxt</span>
+</code></pre></div>
+
+<p><strong>Step 3 · 返回</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">return</span> <span class="n">prev</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">reverseWithHash</span><span class="p">(</span><span class="n">head</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">head</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">prev</span><span class="p">,</span> <span class="n">cur</span><span class="p">,</span> <span class="n">prev_hash</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">head</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">cur</span><span class="p">:</span>
+        <span class="n">nxt</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">next</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">prev</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">val</span> <span class="o">+</span> <span class="n">prev_hash</span>
+        <span class="n">prev_hash</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">hash</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">cur</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">nxt</span>
+    <span class="k">return</span> <span class="n">prev</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>反转 + 重算 hash 一次走完，不要两遍扫。</li>
+<li><code>prev_hash</code> 是关键状态（每步累加），不要漏。</li>
+<li>复杂度 O(n) time，O(1) space。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li><strong>hash 用旧 hash</strong>：反转后 <code>next</code> 已经变方向了，必须用 prev_hash 重算。</li>
+<li><strong><code>prev_hash</code> 初始 0</strong>：约定"空 / 末尾的 hash 是 0"。</li>
+<li><strong>三指针顺序错</strong>：必须先存 nxt 再改 next，否则丢失链。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_1279_traffic-light.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 1279. Light Controlled Intersection 红绿灯路口</span></a>
+  <a href="lc_207_course-schedule.html" class="next"><span class="label">下一题 →</span><span class="title">LC 207. Schedule 课程表（feature 依赖激活）</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>
