@@ -100,27 +100,71 @@
 
 <section id="思路拆解">
 <h2>🪜 思路拆解</h2>
-<p><strong>Step 1 · 字典转 set</strong></p>
-<p><strong>Step 2 · 递归 dfs(start) → 所有拆分</strong>
-- 终止：<code>start == n</code> 返回 <code>[""]</code>（空尾巴）。
+<p><strong>Step 1 · 字典转 set</strong>
+- O(1) 查询。</p>
+<p><strong>Step 2 · 手写 memo 字典</strong>
+- <code>memo: dict[int, list[str]]</code>，key 是起点 start，value 是该起点的所有拆分结果。
+- 为什么手写而不用 <code>@lru_cache</code>：
+  1. 面试官常希望看到你<strong>主动管理 memo</strong>，证明你理解记忆化。
+  2. lru_cache 是 Python 特定语法，C++/Java 没有等价物，写手动版可移植。
+  3. 手写更容易讲清楚"为什么这步能 memoize"。</p>
+<p><strong>Step 3 · 递归 dfs(start) → 所有拆分</strong>
+- 入口先查 memo，命中直接返回。
+- 终止：<code>start == n</code> 返回 <code>[""]</code>（空尾巴 — 这是关键 idiom，让上层能 join）。
 - 遍历 <code>end</code> 从 <code>start+1</code> 到 n：
   - <code>word = s[start:end]</code> 在字典？
-  - 递归 <code>tail_results = dfs(end)</code>。
-  - 把 <code>word</code> + tail 拼起来加到 result。</p>
-<p><strong>Step 3 · Memoize</strong>
-- <code>@lru_cache</code> 或手写 dict。</p>
+  - 递归 <code>tails = dfs(end)</code>。
+  - 把 <code>word</code> + 每个 tail 拼起来加到 result。
+- <strong>递归返回前写入 memo</strong>。</p>
+<p><strong>Step 4 · 拼接细节</strong>
+- tail 为空 → 直接用 word（避免末尾多余空格）。
+- tail 非空 → <code>word + " " + tail</code>。</p>
 </section>
 
 <section id="逐步实现">
 <h2>⌨️ 逐步实现</h2>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
-
-<span class="k">def</span> <span class="nf">wordBreak</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">wordDict</span><span class="p">):</span>
+<p><strong>Step 1-2 · 初始化（手写 memo 替代 lru_cache）</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">wordBreak</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">wordDict</span><span class="p">):</span>
     <span class="n">word_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">wordDict</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">memo</span> <span class="o">=</span> <span class="p">{}</span>                                <span class="c1"># 手动 memo: start -&gt; list[str]</span>
+</code></pre></div>
 
-    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<p><strong>Step 3 · 递归 + 手动 memo</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">start</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>                    <span class="c1"># memo 命中直接返回</span>
+            <span class="k">return</span> <span class="n">memo</span><span class="p">[</span><span class="n">start</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>                      <span class="c1"># 空尾巴, 让上层 join 不出错</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">word</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_set</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">tail</span> <span class="ow">in</span> <span class="n">dfs</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">tail</span><span class="p">:</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">tail</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>  <span class="c1"># tail 空, 不加空格</span>
+        <span class="n">memo</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>                 <span class="c1"># 写入 memo 后返回</span>
+        <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+
+<p><strong>Step 4 · 调用入口</strong></p>
+<div class="codehilite"><pre><span></span><code>    <span class="k">return</span> <span class="n">dfs</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="python-完整实现">
+<h2>Python 完整实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">wordBreak</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">wordDict</span><span class="p">):</span>
+    <span class="n">word_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">wordDict</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">memo</span> <span class="o">=</span> <span class="p">{}</span>
+
     <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">start</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">memo</span><span class="p">[</span><span class="n">start</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
@@ -128,32 +172,35 @@
             <span class="n">word</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_set</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">tail</span> <span class="ow">in</span> <span class="n">dfs</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
-                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">tail</span> <span class="k">else</span> <span class="n">word</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">tail</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">tail</span><span class="p">:</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">tail</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">memo</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">return</span> <span class="n">dfs</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 </section>
 
-<section id="python-完整实现">
-<h2>Python 完整实现</h2>
-<p>（见上）</p>
-</section>
-
 <section id="讲解策略">
 <h2>讲解策略</h2>
 <ol>
 <li>比 139 复杂：要枚举所有路径而非只判存在。</li>
-<li>Memoization 关键 — 同一 start 不重算。</li>
-<li>输出最坏指数级，要主动说。</li>
+<li><strong>手写 memo 字典</strong>：明确告诉面试官 "I'll manage the memo manually so you can see the logic"。</li>
+<li>Memo 的 key 是 <code>start</code>，value 是 <code>s[start:]</code> 的所有拆分 — 子问题独立于上下文。</li>
+<li>输出最坏指数级（2^n 种拆分），要主动说。</li>
+<li>提优化：可以先跑一遍 LC 139 判定能否拆，能拆再跑 dfs，避免无用搜索（在反例输入如 <code>s="aaaaaaaaab", dict=["a","aa","aaa",...]</code> 中救命）。</li>
 </ol>
 </section>
 
 <section id="常见坑">
 <h2>常见坑</h2>
 <ul>
-<li><strong>空尾巴处理</strong>：<code>dfs(n)</code> 返回 <code>[""]</code> 而不是 <code>[]</code>，否则上层无法拼接。</li>
-<li><strong>拼接空格</strong>：tail 为空时不加空格。</li>
+<li><strong>忘记写 memo</strong>：递归会指数爆炸。</li>
+<li><strong>空尾巴处理</strong>：<code>dfs(n)</code> 返回 <code>[""]</code> 而不是 <code>[]</code>，否则上层 <code>for tail in dfs(end)</code> 直接跳出，结果空。</li>
+<li><strong>拼接空格</strong>：tail 为空时不加空格，不然末尾多 1 个空格。</li>
+<li><strong>memo 用 list 当 key</strong>：start 是 int，没问题；但如果改用 substring 当 key（如 memo[s[start:]]），内存爆炸。</li>
 </ul>
 </section>
 
