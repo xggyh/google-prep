@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 原创 G25. Green-Only Wordle 仅绿色反馈的 Wordle · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_289_game-of-life.html">LC 289. of Life 生命游戏</a></li>
+    <li><a href="lc_1279_traffic-light.html">LC 1279. Light Controlled Intersection 红绿灯路口</a></li>
+    <li><a href="lc_206_reverse-linked-list.html">LC 206. Linked List 反转链表（含 hash 验证变体）</a></li>
+    <li><a href="go_G25_green-wordle.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">Google 原创 G25. Wordle 仅绿色反馈的 Wordle</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>Google 原创 G25. Green-Only Wordle 仅绿色反馈的 Wordle</h1>
+  <p>类别：🎮 模拟 / 链表 / 并发 · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-low">🆕 Google 原创</span></p>
+  <div class="meta">
+    <span class="badge">🎮 模拟 / 链表 / 并发</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-low">🆕 Google 原创</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：模拟 / 链表 / 并发 / 启发式 | <strong>难度</strong>：Medium | <strong>标记</strong>：Google 原创 | <strong>来源</strong>：L3/L4 编译 #9</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Choose optimal guesses from a dictionary to find hidden 5-letter word using <strong>only exact-match (green) feedback</strong>. Each guess returns "for each position, is it correct".</p>
+<p><strong>中文</strong>：从字典选 guess，反馈只告诉每个位置对不对（绿色）。求最快猜出隐藏单词。</p>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>信息论启发式</strong>：每次选能<strong>最大化区分剩余候选的单词</strong>。</p>
+<p>具体：对每个候选 guess g，计算"如果 g 是答案的话，反馈模式是什么"，把候选按反馈分桶。<strong>最大桶最小</strong>的 g 是最好的下一猜。</p>
+<p>类似经典 Wordle solver 的 minimax 策略。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 维护 candidates 集合（初始 = 整个字典）</strong>
+<strong>Step 2 · 选 best guess (minimize worst-case partition)</strong>
+<strong>Step 3 · 收到反馈后过滤 candidates</strong>
+<strong>Step 4 · 重复直到 candidates == 1 (得到答案)</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">green_only_wordle</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+    <span class="n">guesses</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">feedback</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">g</span> <span class="o">==</span> <span class="n">t</span> <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">target</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">best_guess</span><span class="p">():</span>
+        <span class="c1"># Minimax: minimize max partition size</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>                    <span class="c1"># 允许从全字典选 (信息论 guess)</span>
+            <span class="n">buckets</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+                <span class="n">fb</span> <span class="o">=</span> <span class="n">feedback</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+                <span class="n">buckets</span><span class="p">[</span><span class="n">fb</span><span class="p">]</span> <span class="o">=</span> <span class="n">buckets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fb</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">worst</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buckets</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">worst</span> <span class="o">&lt;</span> <span class="n">best_max</span><span class="p">:</span>
+                <span class="n">best_max</span><span class="p">,</span> <span class="n">best</span> <span class="o">=</span> <span class="n">worst</span><span class="p">,</span> <span class="n">g</span>
+        <span class="k">return</span> <span class="n">best</span>
+
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">best_guess</span><span class="p">()</span>
+        <span class="n">guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="c1"># 模拟反馈 (在真实场景由 oracle 返回)</span>
+        <span class="c1"># 这里返回 best guess; 真题中要 interact</span>
+        <span class="c1"># 先简化：假设有 `actual_target`</span>
+        <span class="c1"># ...</span>
+    <span class="k">return</span> <span class="n">guesses</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>信息论 minimax：每步最大化区分度。</li>
+<li>时间复杂度 O(|words|² · k) per guess，离线预处理可加速。</li>
+<li>简化：随机 guess 也能在 O(log |D|) 期望步内找到。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li>真实 Wordle 还有黄色（错位置）反馈，这题只有绿。</li>
+<li>字典可能没答案 → 候选空。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="go_G24_multi-type-server.html" class="prev"><span class="label">← 上一题</span><span class="title">G24. Server Allocation 多种类型服务器分配</span></a>
+  <a href="go_G26_dice-walk-prob.html" class="next"><span class="label">下一题 →</span><span class="title">G26. Dice Walk Probability 一维骰子游走概率</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

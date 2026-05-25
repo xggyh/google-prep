@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 原创 G15. Prefix Duplicates Removal 前缀去重 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_139_word-break.html">LC 139. Break 单词拆分</a></li>
+    <li><a href="lc_140_word-break-ii.html">LC 140. Break II 单词拆分 II</a></li>
+    <li><a href="lc_224_basic-calculator.html">LC 224. Calculator 基本计算器</a></li>
+    <li><a href="lc_772_basic-calculator-iii.html">LC 772. Calculator III 基本计算器 III</a></li>
+    <li><a href="lc_1233_remove-subfolders.html">LC 1233. Sub-Folders from the Filesystem 删除子文件夹</a></li>
+    <li><a href="lc_249_group-shifted-strings.html">LC 249. Shifted Strings 移位字符串分组</a></li>
+    <li><a href="lc_809_expressive-words.html">LC 809. Words 情感丰富的文字</a></li>
+    <li><a href="lc_1044_longest-dup-substring.html">LC 1044. Duplicate Substring 最长重复子串</a></li>
+    <li><a href="lc_76_min-window-substring.html">LC 76. Window Substring 最小覆盖子串</a></li>
+    <li><a href="lc_394_decode-string.html">LC 394. String 字符串解码</a></li>
+    <li><a href="go_G14_dict-substring-check.html">Google 原创 G14. Substring Check 字典子串检查</a></li>
+    <li><a href="go_G15_prefix-dup-removal.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">Google 原创 G15. Duplicates Removal 前缀去重</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>Google 原创 G15. Prefix Duplicates Removal 前缀去重</h1>
+  <p>类别：🔤 字符串 / 解析 / 栈 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-low">🆕 Google 原创</span></p>
+  <div class="meta">
+    <span class="badge">🔤 字符串 / 解析 / 栈</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-low">🆕 Google 原创</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：字符串 / 数组 / Set 操作 | <strong>难度</strong>：Hard | <strong>标记</strong>：Google 原创 | <strong>来源</strong>：L3/L4 编译 #4</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Delete elements from <code>listB</code> so that its <strong>first k elements</strong> share <strong>no value</strong> with <code>listA</code>.</p>
+<p><strong>中文</strong>：从 listB 中删除元素，使其<strong>前 k 个</strong>与 listA 无公共值。</p>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>Set + 顺序遍历</strong>：
+- <code>setA = set(listA)</code>，O(1) 查询。
+- 遍历 listB，跳过 in setA 的元素，收集前 k 个保留。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 把 listA 转 set</strong>
+<strong>Step 2 · 遍历 listB，跳过 in setA</strong>
+<strong>Step 3 · 保留前 k 个未跳过 + 之后所有元素</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">remove_prefix_dup</span><span class="p">(</span><span class="n">listA</span><span class="p">,</span> <span class="n">listB</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">setA</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">listA</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">kept</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">listB</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">kept</span> <span class="o">&lt;</span> <span class="n">k</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">setA</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                <span class="n">kept</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># else skip</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>Set O(1) 查询。</li>
+<li>双状态：前 k 阶段（filter）+ 之后（全收）。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li>k 超过 listB 中"安全"元素数 → 答案可能为空。</li>
+<li>先问 "前 k 个" 是 result 的前 k 还是 listB 原顺序的前 k。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="go_G14_dict-substring-check.html" class="prev"><span class="label">← 上一题</span><span class="title">G14. Substring Check 字典子串检查</span></a>
+  <a href="go_G16_range-overwrite.html" class="next"><span class="label">下一题 →</span><span class="title">G16. Overwrite Queries 区间覆盖查询</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

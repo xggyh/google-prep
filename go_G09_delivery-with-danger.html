@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 原创 G09. Delivery Route with Danger 含危险点的配送路径 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解变体-1-简单">🪜 思路拆解（变体 1 简单）</a></li>
+    <li><a href="#逐步实现变体-1">⌨️ 逐步实现（变体 1）</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_79_word-search.html">LC 79. Search 单词搜索</a></li>
+    <li><a href="lc_743_network-delay-time.html">LC 743. Delay Time 网络延迟时间</a></li>
+    <li><a href="lc_1101_earliest-acquaintance.html">LC 1101. Earliest Moment When Everyone Become Friends 彼此熟识的最早时间</a></li>
+    <li><a href="lc_1197_knight-moves.html">LC 1197. Knight Moves 进击的骑士</a></li>
+    <li><a href="lc_1254_closed-islands.html">LC 1254. of Closed Islands 统计封闭岛屿的数目</a></li>
+    <li><a href="lc_1740_tree-distance.html">LC 1740. Distance in a Binary Tree 找出二叉树中的距离</a></li>
+    <li><a href="lc_1928_min-cost-time-limit.html">LC 1928. Cost to Reach Destination in Time 规定时间内到达终点的最小花费</a></li>
+    <li><a href="lc_2101_detonate-bombs.html">LC 2101. the Maximum Bombs 引爆最多的炸弹</a></li>
+    <li><a href="lc_2258_escape-fire.html">LC 2258. the Spreading Fire 逃离火灾</a></li>
+    <li><a href="lc_207_course-schedule.html">LC 207. Schedule 课程表（feature 依赖激活）</a></li>
+    <li><a href="lc_1631_min-effort-path.html">LC 1631. with Minimum Effort 最小体力消耗路径</a></li>
+    <li><a href="lc_542_distance-to-zero.html">LC 542. Matrix 距离最近的零（Distance to Nearest Taxi 母题）</a></li>
+    <li><a href="lc_952_largest-component-factor.html">LC 952. Component by Common Factor 按公因数最大连通分量</a></li>
+    <li><a href="go_G05_unique-ranking-finder.html">Google 原创 G05. Ranking Finder 排名唯一可确定的选手</a></li>
+    <li><a href="go_G06_shortest-path-blockers.html">Google 原创 G06. Path with Blockers 带黑名单的最短路径</a></li>
+    <li><a href="go_G07_movie-recommendation.html">Google 原创 G07. Recommendation Graph 电影推荐图</a></li>
+    <li><a href="go_G08_connected-crop.html">Google 原创 G08. Crop Layout 连通作物布局</a></li>
+    <li><a href="go_G09_delivery-with-danger.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">Google 原创 G09. Route with Danger 含危险点的配送路径</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>Google 原创 G09. Delivery Route with Danger 含危险点的配送路径</h1>
+  <p>类别：🗺️ 图 / BFS / DFS · 难度：<span class="diff-med">Med</span> · 标记：<span class="conf-low">🆕 Google 原创</span></p>
+  <div class="meta">
+    <span class="badge">🗺️ 图 / BFS / DFS</span>
+    <span class="badge"><span class="diff-med">Med</span></span>
+    <span class="badge"><span class="conf-low">🆕 Google 原创</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：图 / Dijkstra 变体 | <strong>难度</strong>：Medium | <strong>标记</strong>：Google 原创 | <strong>来源</strong>：L3/L4 编译 #29</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Graph with edges (cost). Some nodes marked <strong>dangerous</strong>. Find shortest route start→end that <strong>avoids dangerous</strong> (or minimizes danger).</p>
+<p><strong>中文</strong>：图中有些节点标记为危险，求 start 到 end 最短路径<strong>避开危险</strong>（或最小化经过危险数）。</p>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>两种变体</strong>：
+1. <strong>完全避开危险</strong>：把危险节点从图删除，跑 Dijkstra。
+2. <strong>最少经过危险</strong>：双维 Dijkstra（cost, danger_count），按 danger_count 主排序，cost 次排序。</p>
+</section>
+
+<section id="思路拆解变体-1-简单">
+<h2>🪜 思路拆解（变体 1 简单）</h2>
+<p><strong>Step 1 · 建图，跳过危险节点的邻居</strong>
+<strong>Step 2 · Dijkstra</strong></p>
+</section>
+
+<section id="逐步实现变体-1">
+<h2>⌨️ 逐步实现（变体 1）</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="k">def</span> <span class="nf">shortest_safe</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">danger</span><span class="p">):</span>
+    <span class="n">danger_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">danger</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">in</span> <span class="n">danger_set</span> <span class="ow">or</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">danger_set</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="p">{</span><span class="n">start</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">pq</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="p">)]</span>
+    <span class="k">while</span> <span class="n">pq</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="n">end</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span>
+        <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">danger_set</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">nd</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">w</span>
+            <span class="k">if</span> <span class="n">nd</span> <span class="o">&lt;</span> <span class="n">dist</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)):</span>
+                <span class="n">dist</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">nd</span>
+                <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="p">(</span><span class="n">nd</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>先 clarify：完全避开 vs 最少经过。</li>
+<li>完全避开 = 节点 + visited 预填。</li>
+<li>最少经过 = 双维 Dijkstra（类似 LC 1928）。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li>start/end 本身危险 → 直接 -1。</li>
+<li>"尽量少"和"严格避开"是不同问题。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="go_G08_connected-crop.html" class="prev"><span class="label">← 上一题</span><span class="title">G08. Crop Layout 连通作物布局</span></a>
+  <a href="go_G10_servers-cyclic.html" class="next"><span class="label">下一题 →</span><span class="title">G10. for Cyclic Tasks 循环任务服务器分配</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

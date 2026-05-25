@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 原创 G11. Circular Day Meetings 24 小时循环会议 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_215_kth-largest.html">LC 215. Largest Element in an Array 数组中的第 K 个最大元素</a></li>
+    <li><a href="lc_253_meeting-rooms-ii.html">LC 253. Rooms II 会议室 II</a></li>
+    <li><a href="lc_347_top-k-frequent.html">LC 347. K Frequent Elements 前 K 个高频元素</a></li>
+    <li><a href="lc_1167_connect-sticks.html">LC 1167. Cost to Connect Sticks 连接棒材的最低费用</a></li>
+    <li><a href="lc_1854_max-population.html">LC 1854. Population Year 人口最多的年份</a></li>
+    <li><a href="lc_2402_meeting-rooms-iii.html">LC 2402. Rooms III 会议室 III</a></li>
+    <li><a href="lc_2655_max-uncovered-ranges.html">LC 2655. Maximal Uncovered Ranges 寻找最大长度的未覆盖区间</a></li>
+    <li><a href="lc_370_range-addition.html">LC 370. Addition 区间加法</a></li>
+    <li><a href="go_G02_k-queues-min-sum.html">Google 原创 G02. Sum / Min Size from K Queues K 个队列找最小</a></li>
+    <li><a href="go_G10_servers-cyclic.html">Google 原创 G10. for Cyclic Tasks 循环任务服务器分配</a></li>
+    <li><a href="go_G11_circular-day-meetings.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">Google 原创 G11. Day Meetings 24 小时循环会议</a></li>
+    <li><a href="go_G12_safe-space-travel.html">Google 原创 G12. Space Travel 安全太空旅行</a></li>
+    <li><a href="go_G13_top-k-logger.html">Google 原创 G13. Logger 频次日志 Top K</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>Google 原创 G11. Circular Day Meetings 24 小时循环会议</h1>
+  <p>类别：📚 堆 / 扫描线 · 难度：<span class="diff-easy">Easy</span> · 标记：<span class="conf-low">🆕 Google 原创</span></p>
+  <div class="meta">
+    <span class="badge">📚 堆 / 扫描线</span>
+    <span class="badge"><span class="diff-easy">Easy</span></span>
+    <span class="badge"><span class="conf-low">🆕 Google 原创</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：堆 / 扫描线 | <strong>难度</strong>：Easy | <strong>标记</strong>：Google 原创 | <strong>来源</strong>：L3/L4 编译 #22</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Meetings in 24h cyclic day (23:59 wraps to 00:00). Find min meeting rooms.</p>
+<p><strong>中文</strong>：24 小时循环时间内的会议，可能跨午夜。求最少会议室。</p>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>展开成 48 小时</strong>：把每个跨夜会议拆成两段（end 之前的部分 + start 之后的部分），用 LC 253 扫描线。</p>
+<p>或者：直接扫描线，但对跨夜的会议 end += 24。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 对每个 (s, e)，若 e &lt;= s，则视为 "(s, e+24)"</strong>
+<strong>Step 2 · LC 253 扫描线 / heap</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="k">def</span> <span class="nf">min_rooms_circular</span><span class="p">(</span><span class="n">meetings</span><span class="p">):</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">meetings</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;=</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">norm</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">+</span> <span class="mi">24</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">norm</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+    <span class="n">norm</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">heap</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">norm</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">heap</span> <span class="ow">and</span> <span class="n">heap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">heapq</span><span class="o">.</span><span class="n">heappop</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span>
+        <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="n">heap</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>跨午夜 → "时间延展"。</li>
+<li>完全标准的 LC 253 思路。</li>
+<li>极端情况：所有会议都跨午夜 → 答案 = 全部数。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li>跨夜判定：<code>e &lt;= s</code> 视为跨。</li>
+<li>时间表示：小时 vs 分钟，先统一。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="go_G10_servers-cyclic.html" class="prev"><span class="label">← 上一题</span><span class="title">G10. for Cyclic Tasks 循环任务服务器分配</span></a>
+  <a href="go_G12_safe-space-travel.html" class="next"><span class="label">下一题 →</span><span class="title">G12. Space Travel 安全太空旅行</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

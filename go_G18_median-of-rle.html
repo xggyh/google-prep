@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 原创 G18. Median of RLE Arrays 两个 RLE 数组的中位数 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_276_paint-fence.html">LC 276. Fence 栅栏涂色</a></li>
+    <li><a href="lc_3350_adjacent-increasing.html">LC 3350. Increasing Subarrays Detection II 检测相邻递增子数组 II</a></li>
+    <li><a href="lc_354_russian-doll-envelopes.html">LC 354. Doll Envelopes 俄罗斯套娃信封</a></li>
+    <li><a href="lc_1944_visible-people-queue.html">LC 1944. of Visible People in a Queue 队列中可以看到的人数</a></li>
+    <li><a href="lc_198_house-robber.html">LC 198. Robber 打家劫舍</a></li>
+    <li><a href="go_G03_gold-chain.html">Google 原创 G03. Chain Equal Split 金链平分</a></li>
+    <li><a href="go_G04_max-subarray-equal-endpoints.html">Google 原创 G04. Subarray Sum with Equal Endpoints 最大子段和 a[i]==a[j]</a></li>
+    <li><a href="go_G16_range-overwrite.html">Google 原创 G16. Overwrite Queries 区间覆盖查询</a></li>
+    <li><a href="go_G17_alt-parity-subarrays.html">Google 原创 G17. Parity Subarrays 交替奇偶子数组</a></li>
+    <li><a href="go_G18_median-of-rle.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">Google 原创 G18. of RLE Arrays 两个 RLE 数组的中位数</a></li>
+    <li><a href="go_G19_tokens-coins.html">Google 原创 G19. &amp; Coins Board Game 跳格收集硬币</a></li>
+    <li><a href="go_G20_knapsack-recover.html">Google 原创 G20. Knapsack with Reconstruction 有界背包 + 还原方案</a></li>
+    <li><a href="go_G21_winning-mahjong.html">Google 原创 G21. Mahjong Hand 麻将胡牌判定</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>Google 原创 G18. Median of RLE Arrays 两个 RLE 数组的中位数</h1>
+  <p>类别：📐 DP / 数组 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-low">🆕 Google 原创</span></p>
+  <div class="meta">
+    <span class="badge">📐 DP / 数组</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-low">🆕 Google 原创</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：DP / 数组 / 二分 | <strong>难度</strong>：Hard | <strong>标记</strong>：Google 原创 | <strong>来源</strong>：L3/L4 编译 #8</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Two arrays in <strong>run-length encoded (RLE)</strong> form, both sorted by value. RLE format: <code>[(value, count), ...]</code>. Find median of the merged sorted array, without decoding.</p>
+<p><strong>中文</strong>：两个 RLE 数组（按值排序），不解码情况下求合并后中位数。</p>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>二分查找</strong>：类似 LC 4 思路。</p>
+<p>总元素数 N1 + N2，中位数位置 <code>mid = (N1 + N2) // 2</code>。</p>
+<p><strong>对值二分</strong>：候选值 v 是某 (value, count) 中的 value。算 "在合并数组中 ≤ v 的元素数 = cnt(v)"。
+- <code>cnt(v) &gt; mid</code> → 答案 ≤ v。
+- <code>cnt(v) ≤ mid</code> → 答案 &gt; v。</p>
+<p>复杂度：O((|A|+|B|) log V)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 计算 N1, N2, mid 位置</strong>
+<strong>Step 2 · 二分 value 范围 [min, max]</strong>
+<strong>Step 3 · count(v) = sum of count for entries with value &lt;= v</strong>
+<strong>Step 4 · 调整二分边界</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">median_rle</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A, B: list of (value, count). Sorted by value.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">total</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">total</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">total</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="k">def</span> <span class="nf">count_le</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">arr</span> <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="c1"># 二分 value</span>
+    <span class="n">all_vals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">A</span><span class="p">)</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">B</span><span class="p">))</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_vals</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">lo</span> <span class="o">&lt;</span> <span class="n">hi</span><span class="p">:</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">all_vals</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">count_le</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">count_le</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">target</span><span class="p">:</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="n">mid</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">all_vals</span><span class="p">[</span><span class="n">lo</span><span class="p">]</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>类似 LC 4，但元素以 RLE 压缩。</li>
+<li>关键 count_le(v) 在 RLE 上 O(|A| + |B|)。</li>
+<li>复杂度 O((|A|+|B|) log V)。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li>偶数 n 中位数：取两个中间值平均（这里简化为下中位数）。</li>
+<li>RLE 中 count = 0 的条目要过滤。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="go_G17_alt-parity-subarrays.html" class="prev"><span class="label">← 上一题</span><span class="title">G17. Parity Subarrays 交替奇偶子数组</span></a>
+  <a href="go_G19_tokens-coins.html" class="next"><span class="label">下一题 →</span><span class="title">G19. &amp; Coins Board Game 跳格收集硬币</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>

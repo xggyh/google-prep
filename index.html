@@ -142,9 +142,9 @@
 
 <div class="header">
   <h1>🎯 Google 面试复习站</h1>
-  <p>22 道面经题 + 38 道精讲（30 LC + 5 Google 原创 + 3 增补）· 全部按"整体思路 → 思路拆解 → 逐步实现"</p>
+  <p>22 道面经题 + 80 道精讲（48 LC + 32 Google 原创）· 全部按"整体思路 → 思路拆解 → 逐步实现"</p>
   <div class="meta">
-    <span class="badge">📅 2026-05 版（含 0522 新增）</span>
+    <span class="badge">📅 2026-05 版（含 0522 + 0525 新增）</span>
     <span class="badge">🔵 SWE / Cloud SDE</span>
     <span class="badge">🟢 AI/ML L4</span>
   </div>
@@ -152,9 +152,9 @@
 
 <div class="stats">
   <div class="stat"><div class="v">22</div><div class="l">面经题</div></div>
-  <div class="stat"><div class="v">38</div><div class="l">LC + 原创精讲</div></div>
-  <div class="stat"><div class="v">7</div><div class="l">算法分类</div></div>
-  <div class="stat"><div class="v">26</div><div class="l">面经 PDF 来源</div></div>
+  <div class="stat"><div class="v">80</div><div class="l">LC + 原创精讲</div></div>
+  <div class="stat"><div class="v">8</div><div class="l">算法分类</div></div>
+  <div class="stat"><div class="v">31</div><div class="l">面经 PDF 来源</div></div>
 </div>
 
 <div class="section-nav">
@@ -338,7 +338,7 @@
 <a name="leetcode"></a>
 <div class="group-title">🔢 LeetCode + Google 原创（按算法类别）</div>
 
-<div class="cat-title">🗺️ 图 / BFS / DFS （11 道）</div>
+<div class="cat-title">🗺️ 图 / BFS / DFS （18 道）</div>
 <div class="grid compact">
     <a href="lc_79_word-search.html" class="card">
       <div class="num lcnum">LC 79</div>
@@ -390,13 +390,48 @@
       <h3>Schedule 课程表（feature 依赖激活）</h3>
       <div class="src"><span class="diff-med">Med</span> · <span class="conf-mid">🔄 LC 变体</span></div>
     </a>
+    <a href="lc_1631_min-effort-path.html" class="card">
+      <div class="num lcnum">LC 1631</div>
+      <h3>with Minimum Effort 最小体力消耗路径</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
+    <a href="lc_542_distance-to-zero.html" class="card">
+      <div class="num lcnum">LC 542</div>
+      <h3>Matrix 距离最近的零（Distance to Nearest Taxi 母题）</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
+    <a href="lc_952_largest-component-factor.html" class="card">
+      <div class="num lcnum">LC 952</div>
+      <h3>Component by Common Factor 按公因数最大连通分量</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
     <a href="go_G05_unique-ranking-finder.html" class="card" style="border-left: 4px solid var(--g-yellow);">
       <div class="num lcnum">🆕 G05</div>
       <h3>Ranking Finder 排名唯一可确定的选手</h3>
       <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
     </a>
+    <a href="go_G06_shortest-path-blockers.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G06</div>
+      <h3>Path with Blockers 带黑名单的最短路径</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G07_movie-recommendation.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G07</div>
+      <h3>Recommendation Graph 电影推荐图</h3>
+      <div class="src"><span class="diff-easy">Easy</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G08_connected-crop.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G08</div>
+      <h3>Crop Layout 连通作物布局</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G09_delivery-with-danger.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G09</div>
+      <h3>Route with Danger 含危险点的配送路径</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
 </div>
-<div class="cat-title">📚 堆 / 扫描线 （9 道）</div>
+<div class="cat-title">📚 堆 / 扫描线 （13 道）</div>
 <div class="grid compact">
     <a href="lc_215_kth-largest.html" class="card">
       <div class="num lcnum">LC 215</div>
@@ -443,8 +478,28 @@
       <h3>Sum / Min Size from K Queues K 个队列找最小</h3>
       <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
     </a>
+    <a href="go_G10_servers-cyclic.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G10</div>
+      <h3>for Cyclic Tasks 循环任务服务器分配</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G11_circular-day-meetings.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G11</div>
+      <h3>Day Meetings 24 小时循环会议</h3>
+      <div class="src"><span class="diff-easy">Easy</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G12_safe-space-travel.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G12</div>
+      <h3>Space Travel 安全太空旅行</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G13_top-k-logger.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G13</div>
+      <h3>Logger 频次日志 Top K</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
 </div>
-<div class="cat-title">🔤 字符串 / 解析 / 栈 （7 道）</div>
+<div class="cat-title">🔤 字符串 / 解析 / 栈 （12 道）</div>
 <div class="grid compact">
     <a href="lc_139_word-break.html" class="card">
       <div class="num lcnum">LC 139</div>
@@ -481,8 +536,33 @@
       <h3>Words 情感丰富的文字</h3>
       <div class="src"><span class="diff-med">Med</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
     </a>
+    <a href="lc_1044_longest-dup-substring.html" class="card">
+      <div class="num lcnum">LC 1044</div>
+      <h3>Duplicate Substring 最长重复子串</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
+    <a href="lc_76_min-window-substring.html" class="card">
+      <div class="num lcnum">LC 76</div>
+      <h3>Window Substring 最小覆盖子串</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
+    <a href="lc_394_decode-string.html" class="card">
+      <div class="num lcnum">LC 394</div>
+      <h3>String 字符串解码</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
+    <a href="go_G14_dict-substring-check.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G14</div>
+      <h3>Substring Check 字典子串检查</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G15_prefix-dup-removal.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G15</div>
+      <h3>Duplicates Removal 前缀去重</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
 </div>
-<div class="cat-title">📐 DP / 数组 （6 道）</div>
+<div class="cat-title">📐 DP / 数组 （13 道）</div>
 <div class="grid compact">
     <a href="lc_276_paint-fence.html" class="card">
       <div class="num lcnum">LC 276</div>
@@ -504,6 +584,11 @@
       <h3>of Visible People in a Queue 队列中可以看到的人数</h3>
       <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
     </a>
+    <a href="lc_198_house-robber.html" class="card">
+      <div class="num lcnum">LC 198</div>
+      <h3>Robber 打家劫舍</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
     <a href="go_G03_gold-chain.html" class="card" style="border-left: 4px solid var(--g-yellow);">
       <div class="num lcnum">🆕 G03</div>
       <h3>Chain Equal Split 金链平分</h3>
@@ -514,21 +599,66 @@
       <h3>Subarray Sum with Equal Endpoints 最大子段和 a[i]==a[j]</h3>
       <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
     </a>
+    <a href="go_G16_range-overwrite.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G16</div>
+      <h3>Overwrite Queries 区间覆盖查询</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G17_alt-parity-subarrays.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G17</div>
+      <h3>Parity Subarrays 交替奇偶子数组</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G18_median-of-rle.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G18</div>
+      <h3>of RLE Arrays 两个 RLE 数组的中位数</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G19_tokens-coins.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G19</div>
+      <h3>&amp; Coins Board Game 跳格收集硬币</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G20_knapsack-recover.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G20</div>
+      <h3>Knapsack with Reconstruction 有界背包 + 还原方案</h3>
+      <div class="src"><span class="diff-easy">Easy</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G21_winning-mahjong.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G21</div>
+      <h3>Mahjong Hand 麻将胡牌判定</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
 </div>
-<div class="cat-title">🌳 树 / BST （2 道）</div>
+<div class="cat-title">🌳 树 / BST （5 道）</div>
 <div class="grid compact">
     <a href="lc_450_delete-node-bst.html" class="card">
       <div class="num lcnum">LC 450</div>
       <h3>Node in a BST 删除二叉搜索树中的节点</h3>
       <div class="src"><span class="diff-med">Med</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
     </a>
+    <a href="lc_834_sum-of-distances.html" class="card">
+      <div class="num lcnum">LC 834</div>
+      <h3>of Distances in Tree 树中距离之和</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
     <a href="go_G01_file-system-size.html" class="card" style="border-left: 4px solid var(--g-yellow);">
       <div class="num lcnum">🆕 G01</div>
       <h3>System Total Size 文件系统总大小（带 cycle / cache）</h3>
       <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
     </a>
+    <a href="go_G22_chicken-genealogy.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G22</div>
+      <h3>Genealogy 鸡的家族关系（LCA / 祖先判定）</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G23_trinary-tree-mode.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G23</div>
+      <h3>Tree Mode 三叉树众数</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
 </div>
-<div class="cat-title">🏗️ OOP 设计 （5 道）</div>
+<div class="cat-title">🏗️ OOP 设计 （8 道）</div>
 <div class="grid compact">
     <a href="lc_460_lfu-cache.html" class="card">
       <div class="num lcnum">LC 460</div>
@@ -555,8 +685,23 @@
       <h3>Trie (Prefix Tree) 实现 Trie</h3>
       <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">➕ 额外推荐</span></div>
     </a>
+    <a href="lc_380_randomized-set.html" class="card">
+      <div class="num lcnum">LC 380</div>
+      <h3>Insert Delete GetRandom O(1)</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
+    <a href="lc_703_kth-largest-stream.html" class="card">
+      <div class="num lcnum">LC 703</div>
+      <h3>Kth Largest in a Stream</h3>
+      <div class="src"><span class="diff-easy">Easy</span> · <span class="conf-high">⭐ Google 直接对应</span></div>
+    </a>
+    <a href="go_G24_multi-type-server.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G24</div>
+      <h3>Server Allocation 多种类型服务器分配</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
 </div>
-<div class="cat-title">🎮 模拟 / 链表 / 并发 （3 道）</div>
+<div class="cat-title">🎮 模拟 / 链表 / 并发 （4 道）</div>
 <div class="grid compact">
     <a href="lc_289_game-of-life.html" class="card">
       <div class="num lcnum">LC 289</div>
@@ -572,6 +717,49 @@
       <div class="num lcnum">LC 206</div>
       <h3>Linked List 反转链表（含 hash 验证变体）</h3>
       <div class="src"><span class="diff-easy">Easy</span> · <span class="conf-low">➕ 额外推荐</span></div>
+    </a>
+    <a href="go_G25_green-wordle.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G25</div>
+      <h3>Wordle 仅绿色反馈的 Wordle</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+</div>
+<div class="cat-title">🧮 数学 / 概率 / DS （7 道）</div>
+<div class="grid compact">
+    <a href="go_G26_dice-walk-prob.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G26</div>
+      <h3>Dice Walk Probability 一维骰子游走概率</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G27_uniform-from-bit.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G27</div>
+      <h3>Uniform(0,1) from rand_bit 用 rand_bit 模拟均匀分布</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G28_invoice-reconcile.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G28</div>
+      <h3>Reconciliation 发票对账</h3>
+      <div class="src"><span class="diff-easy">Easy</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G29_imbalanced-pr.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G29</div>
+      <h3>Precision-Recall 不平衡数据 PR 曲线</h3>
+      <div class="src"><span class="diff-hard">Hard</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G30_two-sum-squares.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G30</div>
+      <h3>Sum-of-Squares 两种方式的平方和</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G31_bootstrap-prmse.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G31</div>
+      <h3>Percentage RMSE 自助法计算 pRMSE 置信区间</h3>
+      <div class="src"><span class="diff-med">Med</span> · <span class="conf-low">Google 原创</span></div>
+    </a>
+    <a href="go_G32_next-word-predictor.html" class="card" style="border-left: 4px solid var(--g-yellow);">
+      <div class="num lcnum">🆕 G32</div>
+      <h3>Predictor 下一词预测</h3>
+      <div class="src"><span class="diff-easy">Easy</span> · <span class="conf-low">Google 原创</span></div>
     </a>
 </div>
 

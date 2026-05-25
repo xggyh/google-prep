@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC 1044. Longest Duplicate Substring 最长重复子串 · 题库精讲</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="top-link">← 返回入口</a>
+  <h2>📑 本题导航</h2>
+  <ul>
+    <li><a href="#题目概览">题目概览</a></li>
+    <li><a href="#题目">题目</a></li>
+    <li><a href="#澄清问题">澄清问题</a></li>
+    <li><a href="#整体思路">🧠 整体思路</a></li>
+    <li><a href="#思路拆解">🪜 思路拆解</a></li>
+    <li><a href="#逐步实现">⌨️ 逐步实现</a></li>
+    <li><a href="#讲解策略">讲解策略</a></li>
+    <li><a href="#常见坑">常见坑</a></li>
+  </ul>
+  <div class="nav-section">同类题目</div>
+  <ul>
+    <li><a href="lc_139_word-break.html">LC 139. Break 单词拆分</a></li>
+    <li><a href="lc_140_word-break-ii.html">LC 140. Break II 单词拆分 II</a></li>
+    <li><a href="lc_224_basic-calculator.html">LC 224. Calculator 基本计算器</a></li>
+    <li><a href="lc_772_basic-calculator-iii.html">LC 772. Calculator III 基本计算器 III</a></li>
+    <li><a href="lc_1233_remove-subfolders.html">LC 1233. Sub-Folders from the Filesystem 删除子文件夹</a></li>
+    <li><a href="lc_249_group-shifted-strings.html">LC 249. Shifted Strings 移位字符串分组</a></li>
+    <li><a href="lc_809_expressive-words.html">LC 809. Words 情感丰富的文字</a></li>
+    <li><a href="lc_1044_longest-dup-substring.html" style="background:var(--accent);color:var(--g-blue);font-weight:600;">LC 1044. Duplicate Substring 最长重复子串</a></li>
+    <li><a href="lc_76_min-window-substring.html">LC 76. Window Substring 最小覆盖子串</a></li>
+    <li><a href="lc_394_decode-string.html">LC 394. String 字符串解码</a></li>
+    <li><a href="go_G14_dict-substring-check.html">Google 原创 G14. Substring Check 字典子串检查</a></li>
+    <li><a href="go_G15_prefix-dup-removal.html">Google 原创 G15. Duplicates Removal 前缀去重</a></li>
+  </ul>
+  <div class="nav-section">面经 22 题</div>
+  <ul>
+    <li><a href="01_friend-logs.html">Q01. 朋友圈与解除好友</a></li>
+    <li><a href="02_necklace-split.html">Q02. 项链切割平分 D/R</a></li>
+    <li><a href="03_dijkstra-via.html">Q03. Dijkstra 经过指定点</a></li>
+    <li><a href="04_min-cars.html">Q04. 租车最少辆数</a></li>
+    <li><a href="05_text-editor.html">Q05. Text Editor / Book Keeping System</a></li>
+    <li><a href="06_huffman.html">Q06. Huffman 编码树生成</a></li>
+    <li><a href="07_place-flowers.html">Q07. N×N 网格放花</a></li>
+    <li><a href="08_delete-directory.html">Q08. 删除目录递归实现</a></li>
+    <li><a href="09_game-of-life.html">Q09. Game of Life</a></li>
+    <li><a href="10_door-schedule.html">Q10. 进出门时间表</a></li>
+    <li><a href="11_max-edge-remove.html">Q11. 删点后图中最大边权</a></li>
+    <li><a href="12_circular-fence.html">Q12. 环形 Paint Fence</a></li>
+    <li><a href="13_perfect-wake.html">Q13. Perfect Wake Number 计数</a></li>
+    <li><a href="14_longest-match-token.html">Q14. 最长匹配分词</a></li>
+    <li><a href="15_quick-select.html">Q15. Quick Select</a></li>
+    <li><a href="16_tree-distance.html">Q16. 树中两点距离</a></li>
+    <li><a href="17_substr-prefix.html">Q17. 以 target 为前缀的子串计数 + 最小包含子串</a></li>
+    <li><a href="18_elevator.html">Q18. 电梯调控器</a></li>
+    <li><a href="19_expr-eval.html">Q19. 嵌套表达式求值 add/sub</a></li>
+    <li><a href="20_detonate-bombs.html">Q20. Detonate the Maximum Bombs</a></li>
+    <li><a href="21_word-search-graph.html">Q21. Word Search 图变体</a></li>
+    <li><a href="22_delete-bst.html">Q22. Delete Node in BST</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <h1>LC 1044. Longest Duplicate Substring 最长重复子串</h1>
+  <p>类别：🔤 字符串 / 解析 / 栈 · 难度：<span class="diff-hard">Hard</span> · 标记：<span class="conf-high">⭐ Google 直接对应</span></p>
+  <div class="meta">
+    <span class="badge">🔤 字符串 / 解析 / 栈</span>
+    <span class="badge"><span class="diff-hard">Hard</span></span>
+    <span class="badge"><span class="conf-high">⭐ Google 直接对应</span></span>
+  </div>
+</div>
+
+<section id="题目概览">
+<h2>题目概览</h2>
+<p><strong>🏷️ 类别</strong>：字符串 | <strong>难度</strong>：Hard | <strong>标记</strong>：⭐</p>
+</section>
+
+<section id="题目">
+<h2>题目</h2>
+<p><strong>EN</strong>: Given string <code>s</code>, return the <strong>longest duplicate substring</strong>. If no duplicates exist, return <code>""</code>.</p>
+<p><strong>中文</strong>：返回字符串中<strong>最长重复子串</strong>（重复指至少出现 2 次）。无重复返回 ""。</p>
+</section>
+
+<section id="澄清问题">
+<h2>澄清问题</h2>
+<ul>
+<li><strong>EN</strong>: Overlapping duplicates OK? / Case-sensitive? / Length range?</li>
+<li><strong>中</strong>：重复段可以<strong>重叠</strong>吗（如 "aaaa" 的 "aa"）？大小写敏感？长度范围？</li>
+</ul>
+</section>
+
+<section id="整体思路">
+<h2>🧠 整体思路</h2>
+<p><strong>二分长度 + Rabin-Karp 滚动哈希</strong>：
+- 答案长度在 <code>[1, n-1]</code> 单调可二分：长度 L 有重复 ⇒ 长度 L-1 也有。
+- 给定长度 L，用滚动哈希 O(n) 检查是否存在两个相同的子串。</p>
+<p><strong>复杂度</strong>：O(n log n)。</p>
+</section>
+
+<section id="思路拆解">
+<h2>🪜 思路拆解</h2>
+<p><strong>Step 1 · 二分长度框架</strong>
+- <code>lo = 1, hi = n - 1</code>。
+- 找最大 L 使 <code>check(L)</code> 返回某个重复子串。</p>
+<p><strong>Step 2 · check(L) — Rabin-Karp</strong>
+- base = 26（字母），mod = 大质数。
+- 维护 hash window 长度 L，每次滑动 <code>(hash * base + new) % mod - old * base^L % mod</code>。
+- 用 set 存所有窗口 hash；遇到重复 hash 比较实际子串（防止冲突）。</p>
+<p><strong>Step 3 · 返回最长重复串</strong></p>
+</section>
+
+<section id="逐步实现">
+<h2>⌨️ 逐步实现</h2>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">longestDupSubstring</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">MOD</span><span class="p">,</span> <span class="n">BASE</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">61</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">26</span>
+
+    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="n">L</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">pow</span><span class="p">(</span><span class="n">BASE</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">MOD</span><span class="p">)</span>
+        <span class="n">seen</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">BASE</span> <span class="o">+</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">))</span> <span class="o">%</span> <span class="n">MOD</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">L</span><span class="p">:</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">L</span><span class="p">])</span> <span class="o">-</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">))</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="o">%</span> <span class="n">MOD</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">L</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">seen</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">seen</span><span class="p">[</span><span class="n">h</span><span class="p">]:</span><span class="n">seen</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">+</span> <span class="n">L</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">L</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="n">i</span> <span class="o">-</span> <span class="n">L</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">seen</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">L</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">ans_start</span><span class="p">,</span> <span class="n">ans_len</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">lo</span> <span class="o">&lt;=</span> <span class="n">hi</span><span class="p">:</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">check</span><span class="p">(</span><span class="n">mid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">ans_start</span><span class="p">,</span> <span class="n">ans_len</span> <span class="o">=</span> <span class="n">idx</span><span class="p">,</span> <span class="n">mid</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="n">ans_start</span><span class="p">:</span><span class="n">ans_start</span> <span class="o">+</span> <span class="n">ans_len</span><span class="p">]</span>
+</code></pre></div>
+</section>
+
+<section id="讲解策略">
+<h2>讲解策略</h2>
+<ol>
+<li>单调性论证（长度 L OK ⇒ L-1 也 OK）→ 二分。</li>
+<li>Rabin-Karp 滚动哈希 O(1) 算新 hash。</li>
+<li><strong>必须比较实际子串</strong>避免 hash 冲突。</li>
+<li>复杂度 O(n log n)。</li>
+</ol>
+</section>
+
+<section id="常见坑">
+<h2>常见坑</h2>
+<ul>
+<li>Hash 冲突没处理 → 错误答案。</li>
+<li>mod 太小（如 1e9+7）容易冲突；用大质数如 <code>(1 &lt;&lt; 61) - 1</code>。</li>
+<li>二分边界：<code>lo &lt;= hi</code> 配合 <code>lo = mid + 1</code>。</li>
+</ul>
+</section>
+
+<div class="qnav">
+  <a href="lc_1944_visible-people-queue.html" class="prev"><span class="label">← 上一题</span><span class="title">LC 1944. of Visible People in a Queue 队列中可以看到的人数</span></a>
+  <a href="lc_76_min-window-substring.html" class="next"><span class="label">下一题 →</span><span class="title">LC 76. Window Substring 最小覆盖子串</span></a>
+</div>
+
+<footer>
+  LeetCode 题库精讲 · 配合 Google 面经一起复习
+</footer>
+
+</main>
+</body>
+</html>
